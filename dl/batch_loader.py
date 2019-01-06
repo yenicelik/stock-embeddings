@@ -25,7 +25,7 @@ class BatchLoader:
                 self.counter * self.batch_size:
                 (self.counter + 1) * self.batch_size,
                 :]
-        Y_out = self.X[:,
+        Y_out = self.Y[:,
                 self.counter * self.batch_size:
                 (self.counter + 1) * self.batch_size,
                 :]

@@ -1,6 +1,20 @@
 # deeplearning - two sigma challenge
 
 -----
+
+Timeline:
+
+- Report Deadline 19th January -- All
+- Programming deadline 17th January
+- Implement everything in proposal 14th [need 1 day to train probably?]
+
+- Implement feature selection algorithm others 13th -- Others
+- Implement feature selection algorithm PCA 11th -- Kostas
+- Implement Loss Function 8th -- David
+- Implement Peripheral 8th -- David
+- Implement Baseline NN (from Kaggle) 10th [should work on random input data] -- All
+
+-----
 Some things to note:
 
 - Make sure to use python 3.
