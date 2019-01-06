@@ -1,19 +1,12 @@
 # deeplearning - two sigma challenge
 
 -----
-
-Make sure to use python 3.
-
 Some things to note:
-- Please create a file called ".env" in the root directory of this project,
-and write to the file the following item:
- 
- ```
-LEONHARD_UNAME="yedavid"
- ```
- (i..e instead of yedavid, use your username)
- 
- To install any packages, use the following commands (inside a virtualenvironment!):
+
+- Make sure to use python 3.
+
+
+- To install any packages, use the following commands (inside a virtualenvironment!):
  
  ```
  pip install -r requirements.txt
@@ -23,6 +16,12 @@ LEONHARD_UNAME="yedavid"
  
  Whenever you install a new package, please append the `requirements.txt` 
  file with the modulename, as well as the most specific module version.
+
+- Here is the kaggle link whose dataset we use.
+```
+https://www.kaggle.com/qks1lver/amex-nyse-nasdaq-stock-histories
+```
+Download the data into the `data` folder inside the root directory of this project.
  
 -----
 
@@ -55,3 +54,25 @@ Prediction algorithms:
 Other features:
 - [ ] Loss function
 
+
+
+---- 
+Q & A:
+
+- Do we do the training-test split between stocks, or dates? (or somehow both?)
+- X is of shape (n_stocks, n_dates, n_features). 
+Should Y be of shape (n_stocks, n_dates, 6) (6, because high, low, open, close, volume, medium)? 
+Or what exactly do we want to predict?
+
+
+----
+Backlog (ignore for now)
+
+- Please create a file called ".env" in the root directory of this project,
+and write to the file the following item:
+ 
+ ```
+LEONHARD_UNAME="yedavid"
+ ```
+ (i..e instead of yedavid, use your username)
+ 
