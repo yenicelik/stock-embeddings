@@ -1,0 +1,1 @@
+rsync -r -v --exclude ~/deeplearning/venv/ ~/deeplearning/ yedavid@login.leonhard.ethz.ch:~/deeplearning/ --progress
