@@ -47,3 +47,7 @@ if __name__ == "__main__":
     Y_train = np.random.random((n_stocks, n_dates, n_features))
 
     batch_loader = BatchLoader()
+
+
+    for X_batch, Y_bach in batch_loader.next():
+        sess.run(X_batch, Y_bach)
