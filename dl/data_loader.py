@@ -2,7 +2,7 @@ import time
 import os
 import pickle
 import numpy as np
-import modin.pandas as pd
+import pandas as pd
 
 import multiprocessing
 
@@ -96,7 +96,7 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
 
     return result
 
-def import_data(development=False, reuse=True):
+def import_data(development=False, reuse=True, dataframe_format=False):
     """
 
     :param development:
@@ -111,7 +111,7 @@ def import_data(development=False, reuse=True):
         with open(pckl_path, "rb") as f:
             obj = pickle.load(f)
 
-        if reuse and "encoder_label" in obj and "encoder_date" in obj and "matr" in obj:
+        if not dataframe_format and reuse and "encoder_label" in obj and "encoder_date" in obj and "matr" in obj:
             return obj["matr"], obj["encoder_date"], obj["encoder_label"]
     except:
         print("No file found!")
@@ -120,6 +120,9 @@ def import_data(development=False, reuse=True):
     datasave = os.getenv("DATAPATH_PROCESSED") if not development else os.getenv("DATAPATH_PROCESSED_DEV")
     df = pd.read_csv(datasave)
     print("Using dataframe: ", df.head(2))
+
+    if dataframe_format:
+        return df
 
     stock_symbols = np.sort(df['Label'].unique().astype(str))
     dates = np.sort((df['Date'].unique()))
@@ -158,38 +161,15 @@ def import_data(development=False, reuse=True):
     print(out[100:110, 5000:5010])
     print("Weird...")
 
-    print("Number of nans is: ", np.count_nonzero(~np.isnan(out)) / (100 * 12077 * 8)) # TODO: 20% of the data is nans! what to do with these values?
+    print("Number of nans is: ", np.count_nonzero(~np.isnan(out)) / (out.shape[0] * out.shape[1] * out.shape[2])) # TODO: 20% of the data is nans! what to do with these values?
 
-
-    # print("Matrix is: ", matr[:2, :])
-    #
-    # print("Labels: ", )
-    # lab_idx = matr[:,0].astype(int)
-    # date_idx = matr[:,1].astype(int)
-    # print(lab_idx[:50])
-    # print(date_idx[:50])
     # out[lab_idx, date_idx, :] = matr[:, 2:] # TODO: Double check this! (testing out the first few indices to conform to the dataframe)
-    # print(out.shape)
 
     print("Df head is: ")
     print(df.head(2))
     print(matr[:2, :])
     print(matr.shape)
     print("Done printing the matrix")
-
-
-    # out[int(df.Label), int(df.Date) :] = np.asarray(
-    #     [
-    #         df.Open,
-    #         df.High,
-    #         df.Low,
-    #         df.Close,
-    #         df.Volume,
-    #         df.OpenInt,
-    #         df.ReturnOpenNext,
-    #         df.ReturnOpenPrevious
-    #     ]
-    # ) # row[3:]
 
     # i = 0
     # start_time = time.time()
@@ -266,7 +246,7 @@ if __name__ == "__main__":
     # result = preprocess_individual_csvs_to_one_big_csv(development=False)
     # print(result.head(2))
 
-    data_matrix, encoder_date, encoder_label = import_data(development=True)
+    data_matrix, encoder_date, encoder_label = import_data(development=False)
 
     print(data_matrix.shape)
 

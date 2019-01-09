@@ -49,7 +49,7 @@ Peripheral:
 - [ ] Batch loader for validation set
 - [ ] Batch loader for test set
 - [ ] Automatic deployment to Leonhard, and automated download of saved weights
-- [ ] Setup environment for feature algorithms, debug tools, prediction algorithms, and other features
+- [x] Setup environment for feature algorithms, debug tools, prediction algorithms, and other features
 
 Debug tools:
 - [ ] Tensorboard coupled to training loss and validation loss
