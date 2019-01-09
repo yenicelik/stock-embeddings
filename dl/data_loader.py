@@ -1,5 +1,6 @@
 import time
 import os
+import pickle
 import numpy as np
 import modin.pandas as pd
 
@@ -7,6 +8,7 @@ import multiprocessing
 
 from dotenv import load_dotenv
 pd.set_option('display.max_columns', 500)
+np.set_printoptions(threshold=np.nan)
 load_dotenv()
 
 
@@ -94,19 +96,33 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
 
     return result
 
-def import_data(development=False):
+def import_data(development=False, reuse=True):
     """
 
     :param development:
     :return:
     """
 
+    # Check if loading is possible
+
+    pckl_path = os.getenv("DATA_PICKLE_DEV") if development else os.getenv("DATA_PICKLE")
+
+    try:
+        with open(pckl_path, "rb") as f:
+            obj = pickle.load(f)
+
+        if reuse and "encoder_label" in obj and "encoder_date" in obj and "matr" in obj:
+            return obj["matr"], obj["encoder_date"], obj["encoder_label"]
+    except:
+        print("No file found!")
+
+
     datasave = os.getenv("DATAPATH_PROCESSED") if not development else os.getenv("DATAPATH_PROCESSED_DEV")
     df = pd.read_csv(datasave)
     print("Using dataframe: ", df.head(2))
 
-    stock_symbols = np.sort(np.unique(df['Label'].values))
-    dates = np.sort((np.unique(df['Date'].values)))
+    stock_symbols = np.sort(df['Label'].unique().astype(str))
+    dates = np.sort((df['Date'].unique()))
 
     # print("Dates are: ", dates) # TODO: There are many non-existing entries here!
 
@@ -120,30 +136,103 @@ def import_data(development=False):
     df['Date'] = [encoder_date.get(i) for i in df['Date']]
     print(df.head(2))
 
-    no_features = len(['Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'ReturnOpenNext', 'ReturnOpenPrevious'])
+    columns = ['Label', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'ReturnOpenNext', 'ReturnOpenPrevious']
+
+    no_features = len(columns) - 2
 
     # Creating the numpy array which we will output
     out = np.empty((len(encoder_label), len(encoder_date), no_features))
-    out[:, :, :] = None
+    out[:, :, :] = np.nan
     print(out.shape)
 
-    matr = df.as_matrix(columns=['Label', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'ReturnOpenNext', 'ReturnOpenPrevious'])
-    print("Matrix is: ", matr[:2, :])
+    # df = df[['Label'], ['Date'], ['Open'], ['High'], ['Low'], ['Close'], ['Volume'], ['OpenInt'], ['ReturnOpenNext'], ['ReturnOpenPrevious']]
+    df = df.reindex(columns=columns)
+    matr = df.values
 
-    out[matr[:,0].astype(int), matr[:,1].astype(int), :] = matr[:, 2:] # TODO: Double check this! (testing out the first few indices to conform to the dataframe)
-    print(out.shape)
+    print("Matr is: ", matr[:2, :])
+    # print("Index 1 is: ", matr[:, 0].astype(np.int))
+    # print("Index 2 is: ", matr[:, 1].astype(np.int))
+    out[ matr[:, 0].astype(np.int), matr[:, 1].astype(np.int) ] = matr[:, 2:] # np.asarray(matr[:, 2:] for i in range(6))
+
+    print("Shape of out is: ", out.shape)
+    print(out[100:110, 5000:5010])
+    print("Weird...")
+
+    print("Number of nans is: ", np.count_nonzero(~np.isnan(out)) / (100 * 12077 * 8)) # TODO: 20% of the data is nans! what to do with these values?
+
+
+    # print("Matrix is: ", matr[:2, :])
+    #
+    # print("Labels: ", )
+    # lab_idx = matr[:,0].astype(int)
+    # date_idx = matr[:,1].astype(int)
+    # print(lab_idx[:50])
+    # print(date_idx[:50])
+    # out[lab_idx, date_idx, :] = matr[:, 2:] # TODO: Double check this! (testing out the first few indices to conform to the dataframe)
+    # print(out.shape)
+
+    print("Df head is: ")
+    print(df.head(2))
+    print(matr[:2, :])
+    print(matr.shape)
+    print("Done printing the matrix")
+
+
+    # out[int(df.Label), int(df.Date) :] = np.asarray(
+    #     [
+    #         df.Open,
+    #         df.High,
+    #         df.Low,
+    #         df.Close,
+    #         df.Volume,
+    #         df.OpenInt,
+    #         df.ReturnOpenNext,
+    #         df.ReturnOpenPrevious
+    #     ]
+    # ) # row[3:]
 
     # i = 0
+    # start_time = time.time()
     # for row in df.itertuples():
-    #     if i % 100:
+    #     i += 1
+    #     if i % 1000 == 0:
     #         print("I is: ", i, len(df))
+    #         print("Time: ", time.time() - start_time )
+    #         start_time = time.time()
     #
     #     # print("Label: ", int(row.Label))
     #     # print("Date: ", int(row.Date))
     #     # print("Row is: ", row)
-    #     out[int(row.Label), int(row.Date) :] = np.asarray([row.Open, row.High, row.Low, row.Close, row.Volume, row.OpenInt, row.ReturnOpenNext, row.ReturnOpenPrevious]) # row[3:]
+    #     out[int(row.Label), int(row.Date) :] = np.asarray(
+    #         [
+    #             row.Open.values,
+    #             row.High.values,
+    #             row.Low.values,
+    #             row.Close.values,
+    #             row.Volume.values,
+    #             row.OpenInt.values,
+    #             row.ReturnOpenNext.values,
+    #             row.ReturnOpenPrevious.values
+    #         ]
+    #     ) # row[3:]
 
-    print(out[:2, :])
+    # print(out[:2, :])
+
+    if development:
+        with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
+            pickle.dump({
+                "encoder_label": encoder_label,
+                "encoder_date": encoder_date,
+                "matr": out
+            }, f)
+    else:
+        with open(os.getenv("DATA_PICKLE"), "wb") as f:
+            pickle.dump({
+                "encoder_label": encoder_label,
+                "encoder_date": encoder_date,
+                "matr": out
+            }, f)
+
 
     return out, encoder_date, encoder_label
 
@@ -177,6 +266,8 @@ if __name__ == "__main__":
     # result = preprocess_individual_csvs_to_one_big_csv(development=False)
     # print(result.head(2))
 
-    result = import_data(development=True)
+    data_matrix, encoder_date, encoder_label = import_data(development=True)
+
+    print(data_matrix.shape)
 
     # create_train_val_test_split(full_dataset)
