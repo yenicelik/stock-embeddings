@@ -33,7 +33,7 @@ Some things to note:
 
 - Here is the kaggle link whose dataset we use.
 ```
-https://www.kaggle.com/qks1lver/amex-nyse-nasdaq-stock-histories
+https://www.kaggle.com/borismarjanovic/price-volume-data-for-all-us-stocks-etfs/version/3
 ```
 Download the data into the `data` folder inside the root directory of this project.
  
