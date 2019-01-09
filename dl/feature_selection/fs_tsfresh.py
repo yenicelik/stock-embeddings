@@ -1,11 +1,17 @@
 """
     Implements the tsfresh feature algorithm, as writte here
     https://tsfresh.readthedocs.io/en/latest/
+
+    Look at this notebook specifically
+    https://github.com/blue-yonder/tsfresh/blob/master/notebooks/timeseries_forecasting_google_stock.ipynb
+
 """
 import numpy as np
 import tsfresh
 from tsfresh import extract_features, select_features
 from tsfresh.utilities.dataframe_functions import impute
+
+from tsfresh.utilities.dataframe_functions import roll_time_series
 
 from dl.data_loader import import_data
 
@@ -28,7 +34,7 @@ class TSFresh:
         assert len(timeseries_X) == len(timeseries_y)
 
         # X_tsfresh containes the extracted tsfresh features
-        self.X_tsfresh = extract_features(timeseries_X, column_id="Label", column_sort="Date", n_jobs=8)
+        self.X_tsfresh = extract_features(timeseries_X, column_id="Label", column_sort="Date", n_jobs=8) # TODO: Is the id column the label?
         impute(self.X_tsfresh)
 
         # which are now filtered to only contain relevant features
@@ -105,6 +111,10 @@ if __name__ == "__main__":
     # Use the development dataframe
     df = import_data(development=True, dataframe_format=True)
 
+    df['id'] = df[]
+
+    # TODO: Sort all the values from here on already as well
+
     print("Total length is: ")
     print(len(df))
 
@@ -124,7 +134,7 @@ if __name__ == "__main__":
     df_sampled = df_sampled.dropna()
 
     X_df_sampled = df_sampled[['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'Label', 'ReturnOpenPrevious']]
-    y_df_sampled = df_sampled['ReturnOpenNext']
+    y_df_sampled = df_sampled['ReturnOpenNext'].values[-1] # TODO: y_df_sampled is the very last item
 
     transformer.fit(X_df_sampled, y_df_sampled)
 

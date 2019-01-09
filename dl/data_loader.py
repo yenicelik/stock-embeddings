@@ -122,6 +122,7 @@ def import_data(development=False, reuse=True, dataframe_format=False):
     print("Using dataframe: ", df.head(2))
 
     if dataframe_format:
+        # TODO: Sort the dataframe here!
         return df
 
     stock_symbols = np.sort(df['Label'].unique().astype(str))
