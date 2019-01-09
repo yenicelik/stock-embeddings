@@ -1,7 +1,7 @@
 import time
 import os
 import numpy as np
-import pandas as pd
+import modin.pandas as pd
 
 import multiprocessing
 
@@ -55,6 +55,8 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
     :param directory: A directory (string)
     :return: A numpy array of size (stocks, dates, features).
     """
+    import pandas as pd
+
     datapath = os.getenv("DATAPATH")
 
     datasave = os.getenv("DATAPATH_PROCESSED") if not development else os.getenv("DATAPATH_PROCESSED_DEV")
@@ -70,24 +72,12 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
 
     print("Total number of file: ", len(filenames))
 
-    offset = 0
-
-    # Load existing dataframe if starting from later item
-    if offset > 0:
-        filenames = filenames[offset:]
-        result = pd.read_csv(datasave)
-    else:
-        result = None # pd.DataFrame(columns=['Label', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'ReturnOpenPrevious', 'ReturnOpenNext'])
-
     pool = multiprocessing.Pool()
     print("Starting map...")
     start_time = time.time()
     all_dfs = pool.map(_get_single_dataframe, filenames)
     all_dfs = list(all_dfs)
     print("Took so many seconds", time.time() - start_time)
-
-    for x in all_dfs:
-        print(x.head(2))
 
     print("All dfs are: ", len(all_dfs))
 
@@ -100,30 +90,7 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
     result.to_csv(datasave)
     print("Saved..")
 
-    # for c, filename in enumerate(filenames):
-    #
-    #     start_time = time.time()
-    #
-    #     df = _get_single_dataframe(filename)
-    #
-    #
-    #     if result is None:
-    #         result = df
-    #         result.to_csv(datasave)
-    #     else:
-    #         result = result.append(df, ignore_index=True)
-    #
-    #     if c % 10 == 0:
-    #         print(offset + c, " items took ", time.time() - start_time)
-    #         print(df.head(2))
-    #         # Append to file
-    #
-    #         # Save the intermediate results to disk
-    #
-    #     if c % 100 == 0:
-    #         print("Saving to disk: ", offset + c)
-    #         result.to_csv(datasave)
-    #         print("Saved...")
+    import modin.pandas as pd
 
     return result
 
@@ -133,11 +100,52 @@ def import_data(development=False):
     :param development:
     :return:
     """
-    datasave = os.getenv("DATAPATH_PROCESSED") if not development else os.getenv("DATAPATH_PROCESSED_DEV")
-    out = pd.read_csv(datasave)
-    print(out.head(2))
 
-    return out
+    datasave = os.getenv("DATAPATH_PROCESSED") if not development else os.getenv("DATAPATH_PROCESSED_DEV")
+    df = pd.read_csv(datasave)
+    print("Using dataframe: ", df.head(2))
+
+    stock_symbols = np.sort(np.unique(df['Label'].values))
+    dates = np.sort((np.unique(df['Date'].values)))
+
+    # print("Dates are: ", dates) # TODO: There are many non-existing entries here!
+
+    # Turn this into the python dictionary
+    encoder_label = {l: idx for idx, l in enumerate(stock_symbols)}
+    df['Label'] = [encoder_label.get(i) for i in df['Label']]
+    print(df.head(2))
+    print("Encode labels: ", encoder_label)
+
+    encoder_date = {l: idx for idx, l in enumerate(dates)}
+    df['Date'] = [encoder_date.get(i) for i in df['Date']]
+    print(df.head(2))
+
+    no_features = len(['Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'ReturnOpenNext', 'ReturnOpenPrevious'])
+
+    # Creating the numpy array which we will output
+    out = np.empty((len(encoder_label), len(encoder_date), no_features))
+    out[:, :, :] = None
+    print(out.shape)
+
+    matr = df.as_matrix(columns=['Label', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'ReturnOpenNext', 'ReturnOpenPrevious'])
+    print("Matrix is: ", matr[:2, :])
+
+    out[matr[:,0].astype(int), matr[:,1].astype(int), :] = matr[:, 2:] # TODO: Double check this! (testing out the first few indices to conform to the dataframe)
+    print(out.shape)
+
+    # i = 0
+    # for row in df.itertuples():
+    #     if i % 100:
+    #         print("I is: ", i, len(df))
+    #
+    #     # print("Label: ", int(row.Label))
+    #     # print("Date: ", int(row.Date))
+    #     # print("Row is: ", row)
+    #     out[int(row.Label), int(row.Date) :] = np.asarray([row.Open, row.High, row.Low, row.Close, row.Volume, row.OpenInt, row.ReturnOpenNext, row.ReturnOpenPrevious]) # row[3:]
+
+    print(out[:2, :])
+
+    return out, encoder_date, encoder_label
 
 def _preprocess(X, Y):
     """
@@ -166,7 +174,9 @@ def create_train_val_test_split(data):
 
 if __name__ == "__main__":
 
-    result = preprocess_individual_csvs_to_one_big_csv(development=False)
-    print(result.head(2))
+    # result = preprocess_individual_csvs_to_one_big_csv(development=False)
+    # print(result.head(2))
+
+    result = import_data(development=True)
 
     # create_train_val_test_split(full_dataset)
