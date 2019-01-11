@@ -6,6 +6,8 @@ import pandas as pd
 
 import multiprocessing
 
+
+
 from dotenv import load_dotenv
 pd.set_option('display.max_columns', 500)
 np.set_printoptions(threshold=np.nan)
@@ -92,7 +94,7 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
     result.to_csv(datasave)
     print("Saved..")
 
-    import modin.pandas as pd
+#    import modin.pandas as pd
 
     return result
 
@@ -113,17 +115,16 @@ def import_data(development=False, reuse=True, dataframe_format=False):
 
         if not dataframe_format and reuse and "encoder_label" in obj and "encoder_date" in obj and "matr" in obj:
             return obj["matr"], obj["encoder_date"], obj["encoder_label"]
+        if  dataframe_format and reuse and "encoder_label" in obj and "encoder_date" in obj and "df" in obj:
+            return obj["df"], obj["encoder_date"], obj["encoder_label"]
     except:
         print("No file found!")
 
 
     datasave = os.getenv("DATAPATH_PROCESSED") if not development else os.getenv("DATAPATH_PROCESSED_DEV")
+
     df = pd.read_csv(datasave)
     print("Using dataframe: ", df.head(2))
-
-    if dataframe_format:
-        # TODO: Sort the dataframe here!
-        return df
 
     stock_symbols = np.sort(df['Label'].unique().astype(str))
     dates = np.sort((df['Date'].unique()))
@@ -139,6 +140,26 @@ def import_data(development=False, reuse=True, dataframe_format=False):
     encoder_date = {l: idx for idx, l in enumerate(dates)}
     df['Date'] = [encoder_date.get(i) for i in df['Date']]
     print(df.head(2))
+
+    if dataframe_format:
+        # TODO: Sort the dataframe here!
+        if development:
+            with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
+                pickle.dump({
+                    "encoder_label": encoder_label,
+                    "encoder_date": encoder_date,
+                    "df": df
+                }, f)
+        else:
+            with open(os.getenv("DATA_PICKLE"), "wb") as f:
+                pickle.dump({
+                    "encoder_label": encoder_label,
+                    "encoder_date": encoder_date,
+                    "df": df
+                }, f)
+
+        return df
+
 
     columns = ['Label', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'OpenInt', 'ReturnOpenNext', 'ReturnOpenPrevious']
 
@@ -160,7 +181,6 @@ def import_data(development=False, reuse=True, dataframe_format=False):
 
     print("Shape of out is: ", out.shape)
     print(out[100:110, 5000:5010])
-    print("Weird...")
 
     print("Number of nans is: ", np.count_nonzero(~np.isnan(out)) / (out.shape[0] * out.shape[1] * out.shape[2])) # TODO: 20% of the data is nans! what to do with these values?
 
@@ -204,14 +224,16 @@ def import_data(development=False, reuse=True, dataframe_format=False):
             pickle.dump({
                 "encoder_label": encoder_label,
                 "encoder_date": encoder_date,
-                "matr": out
+                "matr": out,
+                "df":df
             }, f)
     else:
         with open(os.getenv("DATA_PICKLE"), "wb") as f:
             pickle.dump({
                 "encoder_label": encoder_label,
                 "encoder_date": encoder_date,
-                "matr": out
+                "matr": out,
+                "df": df
             }, f)
 
 
@@ -244,11 +266,11 @@ def create_train_val_test_split(data):
 
 if __name__ == "__main__":
 
-    # result = preprocess_individual_csvs_to_one_big_csv(development=False)
-    # print(result.head(2))
+#    result = preprocess_individual_csvs_to_one_big_csv(development=True)
+#    print(result.head(2))
 
-    data_matrix, encoder_date, encoder_label = import_data(development=False)
+    df, encoder_date, encoder_label = import_data(development=True,dataframe_format=True)
 
-    print(data_matrix.shape)
+    print(df.shape)
 
     # create_train_val_test_split(full_dataset)
