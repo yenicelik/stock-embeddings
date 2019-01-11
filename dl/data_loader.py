@@ -28,11 +28,16 @@ def _get_single_dataframe(filename):
     #df['Label'] = label
     df['Date'] = pd.to_datetime(df['Date'])
 
-    # TODO: @Thomas what do these variables specify?
-    df['ReturnOpenPrevious'] = (df['Open'] - df['Open'].shift(1)) / df['Open'].shift(1)
-    df['ReturnOpenNext'] = (df['Open'].shift(-1) - df['Open']) / df['Open']
-    df['ReturnOpenNext'] = df['ReturnOpenNext'].astype(np.float32)
-    df['ReturnOpenPrevious'] = df['ReturnOpenPrevious'].astype(np.float32)
+
+    df['ReturnOpenNext1'] = (df['Open'].shift(-1) - df['Open']) / df['Open']
+    df['ReturnOpenPrevious1'] = (df['Open'] - df['Open'].shift(1)) / df['Open'].shift(1)
+    df['ReturnOpenPrevious2']=(df.Open-df.Open.shift(2))/df.Open.shift(2)
+    df['ReturnOpenPrevious5']=(df.Open-df.Open.shift(5))/df.Open.shift(5)
+
+    df['ReturnOpenNext1'] = df['ReturnOpenNext1'].astype(np.float32)
+    df['ReturnOpenPrevious1'] = df['ReturnOpenPrevious1'].astype(np.float32)
+    df['ReturnOpenPrevious2'] = df['ReturnOpenPrevious2'].astype(np.float32)
+    df['ReturnOpenPrevious5'] = df['ReturnOpenPrevious5'].astype(np.float32)
 
     # print("Until here takes: ", time.time() - start_time)
     # Change dtype to float32 for faster memory access
@@ -107,17 +112,6 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
     matr = df.values
     print("Matr is: ", matr[:2, :])
     out[matr[:, 0].astype(np.int), matr[:, 1].astype(np.int)] = matr[:, 2:]  # np.asarray(matr[:, 2:] for i in range(6))
-
-    print("Shape of out is: ", out.shape)
-    print(out[:5, 0])
-
-    print("Number of nans is: ", np.count_nonzero(~np.isnan(out)) / (out.shape[0] * out.shape[1] * out.shape[
-        2]))  # TODO: 20% of the data is nans! what to do with these values?
-
-    # out[lab_idx, date_idx, :] = matr[:, 2:] # TODO: Double check this! (testing out the first few indices to conform to the dataframe)
-
-    print("Df head is: ")
-    print(df.head(2))
 
 
     if development:
