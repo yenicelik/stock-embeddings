@@ -1,5 +1,9 @@
 
 
+from dl.data_loader import import_data
+from dl.data_loader import preprocess
+from dl.data_loader import preprocess_individual_csvs_to_one_big_csv
+
 class BaselineModel:
 
     def __init__(self):
@@ -38,6 +42,19 @@ class DecisionTree:
         pass
 
 
-for X, Y, in (X_train, Y_train):
-    model = BaselineModel()
-    model.fit()
+
+
+if __name__ == "__main__":
+
+    result = preprocess_individual_csvs_to_one_big_csv(development=True)
+
+    df, encoder_date, encoder_label = import_data(development=True,dataframe_format=True)
+    print(df.head())
+    df=preprocess(df)
+    print(df.head())
+
+    # for X, Y, in (X_train, Y_train):
+    #     model = BaselineModel()
+    #     model.fit()
+
+    # create_train_val_test_split(full_dataset)
