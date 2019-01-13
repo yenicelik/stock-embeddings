@@ -1,4 +1,5 @@
-
+import os
+import pickle
 
 from dl.data_loader import import_data
 from dl.data_loader import preprocess
@@ -11,9 +12,19 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+
 class BaselineModel:
     embedding_dimension = 10
-    def __init__(self,encoder_label):
+
+    @property
+    def name(self):
+        return "model_kaggle_basepath.pkl"
+
+    def __init__(self, encoder_label, dev=False):
+        self.savepath = os.getenv("MODEL_SAVEPATH_BASEPATH") + "dev/" if dev else os.getenv("MODEL_SAVEPATH_BASEPATH")
+        self.savepath = self.savepath + self.name
+        self.fitted = False
+
         label_input = Input(shape=[1], name="label_input")
         label_embedding = Embedding(len(encoder_label), self.embedding_dimension)(label_input)
         label_logits = Flatten()(label_embedding)
@@ -32,61 +43,80 @@ class BaselineModel:
         out = Dense(1, )(logits)
         self.keras_model = Model(inputs=[label_input, numerical_inputs], outputs=out)
 
+    def save_model(self):
+        """
+            Saves the model
+        :return:
+        """
+        with open(self.savepath, "wb") as f:
+            pickle.dump({
+                "keras_model": self.keras_model,
+            }, f)
 
-
-    #def model_definition(self):
+    def load_model(self):
+        """
+            Loads the model
+        :return:
+        """
+        with open(self.savepath, "rb") as f:
+            obj = pickle.load(f)
+            self.keras_model = obj["keras_model"]
+        if not ("keras_model" in obj):
+            print("Error, not correctly stored")
+            assert False, ("Model could not be loaded!")
+        self.fitted = True
 
     def optimizer_definition(self):
         self.keras_model.compile(optimizer='adam', loss=binary_crossentropy)
 
-    def single_pass(self, X_batch, Y_batch):
-        pass
-
     def predict(self, X):
         return self.keras_model.predict(X)
 
-    def fit(self, X, y):
+    def fit(self, X, y, load_model=False):
         """
+            NOTE! You can also load them model instead of training it!
         :param X: Full dataset
         :param Y:
         :return:
         """
+
+        if load_model:
+            self.load_model()
+            print("Loaded model instead of fitting!")
+            return True
+
         from keras.callbacks import EarlyStopping, ModelCheckpoint
 
         check_point = ModelCheckpoint('model.hdf5', verbose=True, save_best_only=True)
         early_stop = EarlyStopping(patience=5, verbose=True)
         self.keras_model.fit(X, y,
-                  #validation_data=(X_valid, y_valid.astype(int)),
-                  epochs=6,
-                  verbose=False,
-                  callbacks=[early_stop, check_point])
+                             # validation_data=(X_valid, y_valid.astype(int)),
+                             epochs=6,
+                             verbose=False,
+                             callbacks=[early_stop, check_point])
 
-class DecisionTree:
+        self.save_model()
 
-    def __init__(self):
-        pass
-
-    def transform(self, X):
-        pass
-
-    def fit(self, X, Y):
-        pass
+        self.fitted = True
 
 
 if __name__ == "__main__":
+    development = True
+    load_model = False
 
-   # result = preprocess_individual_csvs_to_one_big_csv(development=True)
+    # TODO: Run the following line once before you run the rest
+    # result = preprocess_individual_csvs_to_one_big_csv(development=development)
 
-    df, encoder_date, encoder_label = import_data(development=True,dataframe_format=True)
+    df, encoder_date, encoder_label = import_data(development=development, dataframe_format=True)
     print(df.head())
-    market_df=preprocess(df)
+    market_df = preprocess(df)
 
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     scaler = StandardScaler()
     num_feature_cols = list(market_df.columns[response_col + 1:])
     market_df[num_feature_cols] = scaler.fit_transform(market_df[num_feature_cols])
 
-    model=BaselineModel(encoder_label)
+    model = BaselineModel(encoder_label, dev=development)
     model.optimizer_definition()
     model.keras_model.summary()
 
@@ -95,22 +125,19 @@ if __name__ == "__main__":
         X_num = market_df.loc[indices, num_feature_cols].values
         X = {'num_input': X_num}
         X['label_input'] = market_df.loc[indices, 'Label'].values
-        y = (market_df.loc[indices,'ReturnOpenNext1']>= 0).values
+        y = (market_df.loc[indices, 'ReturnOpenNext1'] >= 0).values
         return X, y,
 
 
     market_train_indices, market_val_indices = train_test_split(market_df.index, test_size=0.25, random_state=23)
 
-
     X_train, y_train = get_input(market_df, market_train_indices)
     X_valid, y_valid = get_input(market_df, market_val_indices)
 
-    model.fit(X_train, y_train.astype(int))
+    model.fit(X_train, y_train.astype(int), load_model=load_model)
 
     predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
 
     print(accuracy_score(predict_train > 0, y_train > 0))
     print(accuracy_score(predict_valid > 0, y_valid > 0))
-
-

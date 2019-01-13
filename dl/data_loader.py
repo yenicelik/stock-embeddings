@@ -134,7 +134,7 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
 
     return df
 
-def import_data(development=False, reuse=True, dataframe_format=False):
+def import_data(development=False, dataframe_format=False):
     """
 
     :param development:
@@ -158,7 +158,7 @@ def import_data(development=False, reuse=True, dataframe_format=False):
             return obj["matr"], obj["encoder_date"], obj["encoder_label"]
 
     except:
-        print("No file found!")
+        print("No file found! Importaing data...")
 
     return False
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     df = preprocess_individual_csvs_to_one_big_csv(development=True)
     print(df.shape)
 
-    df, encoder_date, encoder_label = import_data(development=True,dataframe_format=True)
+    df, encoder_date, encoder_label = import_data(development=True, dataframe_format=True)
     print(df.shape)
 
 
