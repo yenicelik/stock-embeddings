@@ -2,10 +2,10 @@
 
 # TODO: NOTICE: REMOVE THE `--exclude ~/deeplearning/data/` the very first time you execute this bash script!
 
-rsync -anv \
+rsync -rv \
 --exclude=/venv/ \
 --exclude=/.git/ \
 --exclude=/.idea/ \
 --exclude=/data/ \
 --exclude=/.env \
-~/deeplearning/ yedavid@login.leonhard.ethz.ch:~/deeplearning/ --progress
+~/deeplearning/ yedavid@login.leonhard.ethz.ch:~/deeplearning/ --progress --ignore-times

@@ -1,7 +1,8 @@
 python-dotenv
 numpy==1.15.4
-modin-0.2.5
+modin==0.2.5
 setproctitle==1.1.10
 psutil==5.4.8
 tsfresh==0.11.1
 keras==2.2.4
+h5py

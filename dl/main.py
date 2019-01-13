@@ -1,12 +1,16 @@
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+from dl.data_loader import preprocess, import_data, preprocess_individual_csvs_to_one_big_csv
+from dl.model.baseline import BaselineModel
 
 
 def train_kaggle_baseline_model(development, load_model):
 
-    development = True
-    load_model = False
 
     # TODO: Run the following line once before you run the rest
-    # result = preprocess_individual_csvs_to_one_big_csv(development=development)
+    result = preprocess_individual_csvs_to_one_big_csv(development=development)
 
     df, encoder_date, encoder_label = import_data(development=development, dataframe_format=True)
     print(df.head())
@@ -14,10 +18,11 @@ def train_kaggle_baseline_model(development, load_model):
 
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     scaler = StandardScaler()
+    # TODO: Make sure that this only feeds in the correct features! (no response variables are fed-in!)
     num_feature_cols = list(market_df.columns[response_col + 1:])
     market_df[num_feature_cols] = scaler.fit_transform(market_df[num_feature_cols])
 
-    model = BaselineModel(encoder_label, dev=development)
+    model = BaselineModel(encoder_label, num_feature_cols=num_feature_cols, dev=development)
     model.optimizer_definition()
     model.keras_model.summary()
 
@@ -45,3 +50,15 @@ def train_kaggle_baseline_model(development, load_model):
 
 if __name__ == "__main__":
     print("Starting script!")
+
+    from sys import platform
+
+
+    # Make dev true if on linux machine!
+    is_linux = (platform == "linux" or platform == "linux2")
+    is_dev = not is_linux
+
+    print("Running dev: ", is_dev)
+
+    # load model if not linux
+    train_kaggle_baseline_model(development=is_dev, load_model=is_dev)

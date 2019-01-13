@@ -91,3 +91,4 @@ LEONHARD_UNAME="yedavid"
  (i..e instead of yedavid, use your username)
  
 -- implement dummy features
+-- Implement autoregression visualization (checking if from one timestep to another it is symmetric or not etc.)
