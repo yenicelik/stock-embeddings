@@ -14,33 +14,17 @@ def train_kaggle_baseline_model(development, load_model):
     # df, encoder_date, encoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
     # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
 
-    df, encoder_date, encoder_label = import_data(development=development, dataframe_format=True)
+    df, encoder_date, encoder_label = import_data(development=development)
 
-    print(df.head())
     market_df = preprocess(df)
-
-    print("Market df returned is. ", market_df.head())
 
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     scaler = StandardScaler()
     num_feature_cols = list(market_df.columns[response_col + 1:])
 
-    print("Number of feature columns are: ", num_feature_cols)
-
-    # print(df.loc[~df.isnull().any(axis=1)].head())
-
-    print("Types are: ")
     print(market_df.head())
-    print(type(market_df['ReturnOpenPrevious5'][0]))
-
-    print("Last time!")
-
-    print(market_df.head())
-    print("Empties!")
     # TODO: That this is not empty seems to stress me out a bit!!!
-    # market_df = preprocess(market_df)
-    print(market_df[np.isnan(market_df)].head())
-
+    # print(market_df[np.isnan(market_df)].head())
 
     market_df[num_feature_cols] = scaler.fit_transform(market_df[num_feature_cols])
 
@@ -83,7 +67,7 @@ if __name__ == "__main__":
     is_dev = not is_linux
 
     is_dev = False
-    # is_dev = True
+    is_dev = True
 
     print("Running dev: ", is_dev)
 
