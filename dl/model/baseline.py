@@ -1,3 +1,7 @@
+"""
+    Fully connected NN taken from
+        https://www.kaggle.com/christofhenkel/market-data-nn-baseline
+"""
 import os
 import pickle
 
@@ -74,7 +78,7 @@ class BaselineModel:
     def predict(self, X):
         return self.keras_model.predict(X)
 
-    def fit(self, X, y, load_model=False):
+    def fit(self, X, y, X_val, y_val, load_model=False):
         """
             NOTE! You can also load them model instead of training it!
         :param X: Full dataset
@@ -92,8 +96,8 @@ class BaselineModel:
         check_point = ModelCheckpoint('model.hdf5', verbose=True, save_best_only=True)
         early_stop = EarlyStopping(patience=5, verbose=True)
         self.keras_model.fit(X, y,
-                             # validation_data=(X_valid, y_valid.astype(int)),
-                             epochs=6,
+                             validation_data=(X_val, y_val),
+                             epochs=20,
                              verbose=1,
                              callbacks=[early_stop, check_point])
 

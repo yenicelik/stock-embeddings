@@ -7,14 +7,13 @@ from sklearn.preprocessing import StandardScaler
 from dl.data_loader import import_data, preprocess_individual_csvs_to_one_big_csv, preprocess
 from dl.model.baseline import BaselineModel
 
-def train_kaggle_baseline_model(development, load_model):
+def train_kaggle_baseline_model(development, is_leonhard):
 
-
-    # TODO: Run the following line once before you run the rest
-    # df, encoder_date, encoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
-    # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
-
-    df, encoder_date, encoder_label = import_data(development=development)
+    if is_leonhard:
+        df, encoder_date, encoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
+    else:
+        # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
+        df, encoder_date, encoder_label = import_data(development=development)
 
     market_df = preprocess(df)
 
@@ -43,18 +42,22 @@ def train_kaggle_baseline_model(development, load_model):
         return X, y,
 
 
-    market_train_indices, market_val_indices = train_test_split(market_df.index, test_size=0.25, random_state=23)
+    market_indices, market_test_indices = train_test_split(market_df.index, test_size=0.1, random_state=23)
+    market_train_indices, market_val_indices = train_test_split(market_indices, test_size=0.1, random_state=23)
 
     X_train, y_train = get_input(market_df, market_train_indices)
     X_valid, y_valid = get_input(market_df, market_val_indices)
+    X_test, y_test = get_input(market_df, market_test_indices)
 
-    model.fit(X_train, y_train.astype(int), load_model=load_model)
+    model.fit(X_train, y_train.astype(int), X_val=X_valid, y_val=y_valid)
 
-    predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
+    predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
+    predict_test = model.predict(X_test)[:, 0] * 2 - 1
 
-    print(accuracy_score(predict_train > 0, y_train > 0))
-    print(accuracy_score(predict_valid > 0, y_valid > 0))
+    print("Train: ", accuracy_score(predict_train > 0, y_train > 0))
+    print("Validation: ", accuracy_score(predict_valid > 0, y_valid > 0))
+    print("Test: ", accuracy_score(predict_test > 0, y_test > 0))
 
 if __name__ == "__main__":
     print("Starting script!")
@@ -66,10 +69,10 @@ if __name__ == "__main__":
     is_linux = (platform == "linux" or platform == "linux2")
     is_dev = not is_linux
 
-    is_dev = False
-    is_dev = True
+    # is_dev = False
+    # is_dev = True
 
     print("Running dev: ", is_dev)
 
     # load model if not linux
-    train_kaggle_baseline_model(development=is_dev, load_model=False)
+    train_kaggle_baseline_model(development=is_dev, is_leonhard=is_linux)
