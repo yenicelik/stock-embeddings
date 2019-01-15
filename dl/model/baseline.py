@@ -26,7 +26,8 @@ class BaselineModel:
     def name(self):
         return "model_kaggle_basepath"
 
-    def __init__(self, encoder_label, num_feature_cols, dev=False):
+    def __init__(self, encoder_label, num_feature_cols, dev=False,regression=False):
+        self.regression=regression
         self.savepath = os.getenv("MODEL_SAVEPATH_BASEPATH")
         self.savepath = self.savepath + self.name
         self.savepath = self.savepath + "dev.pkl" if dev else self.savepath + ".pkl"
@@ -198,9 +199,9 @@ if __name__ == "__main__":
 
     predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
-
+    print(accuracy_score(predict_train > 0, y_train > 0))
+    print(accuracy_score(predict_valid > 0, y_valid > 0))
 
     model.save_model()
-
     model.fitted = True
 
