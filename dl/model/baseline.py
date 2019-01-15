@@ -111,7 +111,7 @@ class BaselineModel:
         early_stop = EarlyStopping(patience=5, verbose=True)
         self.keras_model.fit(X, y,
                              validation_data=(X_val, y_val),
-                             epochs=3,
+                             epochs=20,
                              verbose=1,
                              callbacks=[early_stop, check_point])
 
