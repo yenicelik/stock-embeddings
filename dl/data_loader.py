@@ -197,6 +197,7 @@ def create_train_val_test_split(data):
 
 if __name__ == "__main__":
 
+    #This creacet df
     df = preprocess_individual_csvs_to_one_big_csv(development=True)
     print(df.shape)
 
