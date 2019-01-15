@@ -1,4 +1,5 @@
-
+import os
+import pickle
 
 from dl.data_loader import import_data
 from dl.data_loader import preprocess
@@ -17,6 +18,20 @@ class BaselineModel:
     embedding_dimension = 10
     def __init__(self, encoder_label, num_feature_cols,regression=False):
         self.regression=regression
+
+class BaselineModel:
+    embedding_dimension = 10
+
+    @property
+    def name(self):
+        return "model_kaggle_basepath"
+
+    def __init__(self, encoder_label, num_feature_cols, dev=False):
+        self.savepath = os.getenv("MODEL_SAVEPATH_BASEPATH")
+        self.savepath = self.savepath + self.name
+        self.savepath = self.savepath + "dev.pkl" if dev else self.savepath + ".pkl"
+        self.fitted = False
+
         label_input = Input(shape=[1], name="label_input")
         label_embedding = Embedding(len(encoder_label), self.embedding_dimension)(label_input)
         label_logits = Flatten()(label_embedding)
@@ -37,29 +52,63 @@ class BaselineModel:
             out = Dense(1, activation='sigmoid')(logits)
         self.keras_model = Model(inputs=[label_input, numerical_inputs], outputs=out)
 
+    def save_model(self):
+        """
+            Saves the model
+        :return:
+        """
+        with open(self.savepath, "wb") as f:
+            pickle.dump({
+                "keras_model": self.keras_model,
+            }, f)
 
+<<<<<<< HEAD
+=======
+    def load_model(self):
+        """
+            Loads the model
+        :return:
+        """
+        with open(self.savepath, "rb") as f:
+            obj = pickle.load(f)
+            self.keras_model = obj["keras_model"]
+        if not ("keras_model" in obj):
+            print("Error, not correctly stored")
+            assert False, ("Model could not be loaded!")
+        self.fitted = True
+
+>>>>>>> c7dc27e075a8ea9e92a7ff7c088218a43cce5fe5
     def optimizer_definition(self):
         if self.regression:
             self.keras_model.compile(optimizer='adam', loss='mean_squared_error')
         else:
             self.keras_model.compile(optimizer='adam', loss=binary_crossentropy,metrics=['accuracy'])
 
-    def single_pass(self, X_batch, Y_batch):
-        pass
-
     def predict(self, X):
         return self.keras_model.predict(X)
 
+
     def fit(self, X, y,validation_data=None):
+
+    def fit(self, X, y, load_model=False):
+>>>>>>> c7dc27e075a8ea9e92a7ff7c088218a43cce5fe5
         """
+            NOTE! You can also load them model instead of training it!
         :param X: Full dataset
         :param Y:
         :return:
         """
+
+        if load_model:
+            self.load_model()
+            print("Loaded model instead of fitting!")
+            return True
+
         from keras.callbacks import EarlyStopping, ModelCheckpoint
 
         check_point = ModelCheckpoint('model.hdf5', verbose=True, save_best_only=True)
         early_stop = EarlyStopping(patience=5, verbose=True)
+<<<<<<< HEAD
         self.keras_model.fit(X, y,epochs=5,verbose=2,validation_data=validation_data)
                  #validation_data=(X_valid, y_valid.astype(int)),
                  # callbacks=[early_stop, metrics=['accuracy']])
@@ -151,8 +200,15 @@ if __name__ == "__main__":
 
     predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
+=======
+        self.keras_model.fit(X, y,
+                             # validation_data=(X_valid, y_valid.astype(int)),
+                             epochs=6,
+                             verbose=False,
+                             callbacks=[early_stop, check_point])
+>>>>>>> c7dc27e075a8ea9e92a7ff7c088218a43cce5fe5
 
-    print(accuracy_score(predict_train > 0, y_train > 0))
-    print(accuracy_score(predict_valid > 0, y_valid > 0))
+        self.save_model()
 
+        self.fitted = True
 

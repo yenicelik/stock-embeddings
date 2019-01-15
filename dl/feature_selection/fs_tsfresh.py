@@ -84,6 +84,8 @@ class TSFresh:
         # features_filtered = select_features(extracted_features, timeseries)
         print("IMPUTED")
 
+        # TODO: Implement transform only for a single stock! (and time-roll it with an initial offset time (similar to a convolution operation)
+
         # print("Extracted features are: ", extracted_features)
         print(extracted_features.columns)
         print(len(extracted_features.columns))
@@ -121,6 +123,8 @@ if __name__ == "__main__":
     # Select a subset of relevant features
 
     df = df.dropna()
+
+    # TODO: predict for a single stock first!
 
     df_sampled = df.head(6000)
     print("Uniques: ", df_sampled['Label'].unique())
