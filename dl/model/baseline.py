@@ -189,12 +189,12 @@ if __name__ == "__main__":
 
 
     market_train_indices, market_val_indices = train_test_split(market_df.index, test_size=0.25, random_state=23)
-
-
+    a=3
     X_train, y_train = get_input(market_df, market_train_indices)
     X_valid, y_valid = get_input(market_df, market_val_indices)
 
     model.fit(X_train, y_train.astype(int),validation_data=(X_valid, y_valid.astype(int)))
+    #This is a mommeent
 
     predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
