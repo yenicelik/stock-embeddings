@@ -92,12 +92,14 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
     #Encoding
     stock_symbols = np.sort(df['Label'].unique().astype(str))
     encoder_label = {l: idx for idx, l in enumerate(stock_symbols)}
+    decoder_label = dict(map(reversed, encoder_label.items()))
     df['Label'] = [encoder_label.get(i) for i in df['Label']]
     print(df.head(2))
     print("Encode labels: ", encoder_label)
 
     dates = np.sort((df['Date'].unique()))
     encoder_date = {l: idx for idx, l in enumerate(dates)}
+    decoder_date = dict(map(reversed, encoder_date.items()))
     df['Date'] = [encoder_date.get(i) for i in df['Date'].values]
     print(df.head(2))
 
@@ -118,7 +120,9 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
         with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
             pickle.dump({
                 "encoder_label": encoder_label,
+                "decoder_label":decoder_label,
                 "encoder_date": encoder_date,
+                "decoder_date": decoder_date,
                 "matr": out,
                 "df":df
             }, f)
@@ -153,9 +157,9 @@ def import_data(development=False, reuse=True, dataframe_format=False):
             return False
 
         if  dataframe_format:
-            return obj["df"], obj["encoder_date"], obj["encoder_label"]
+            return obj["df"], obj["encoder_date"], obj["encoder_label"],obj["decoder_date"], obj["decoder_label"]
         if not dataframe_format:
-            return obj["matr"], obj["encoder_date"], obj["encoder_label"]
+            return obj["matr"], obj["encoder_date"], obj["encoder_label"],obj["decoder_date"], obj["decoder_label"]
 
     except:
         print("No file found!")
@@ -169,7 +173,10 @@ def preprocess(X):
     :return: df without null rows
     """
     X_hat = X.loc[~X.isnull().any(axis=1)]
+    X_hat= X_hat[~((X_hat.ReturnOpenPrevious5 > 5) | (X_hat.ReturnOpenPrevious5 < -0.75))]
+    X_hat = X_hat[~((X_hat.ReturnOpenNext1 > 5) | (X_hat.ReturnOpenNext1 < -0.75))]
     X_hat = X_hat.sort_values(['Date', 'Label'])
+
     X_hat.reset_index(inplace=True, drop=True)
 
     return X_hat
@@ -193,7 +200,7 @@ if __name__ == "__main__":
     df = preprocess_individual_csvs_to_one_big_csv(development=True)
     print(df.shape)
 
-    df, encoder_date, encoder_label = import_data(development=True,dataframe_format=True)
+    df, encoder_date, encoder_label,decoder_date, decoder_label = import_data(development=True,dataframe_format=True)
     print(df.shape)
 
 
