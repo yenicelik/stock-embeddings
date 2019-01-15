@@ -59,6 +59,7 @@ class BaselineModel:
             Loads the model
         :return:
         """
+        # TODO: check if weights are saved with pickle
         with open(self.savepath, "rb") as f:
             obj = pickle.load(f)
             self.keras_model = obj["keras_model"]
