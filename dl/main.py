@@ -70,7 +70,7 @@ if __name__ == "__main__":
     is_dev = not is_linux
 
     # is_dev = False
-    # is_dev = True
+    is_dev = True
 
     print("Running dev: ", is_dev)
 

@@ -6,9 +6,8 @@ import pandas as pd
 
 import multiprocessing
 
-
-
 from dotenv import load_dotenv
+
 pd.set_option('display.max_columns', 500)
 np.set_printoptions(threshold=np.nan)
 load_dotenv()
@@ -25,14 +24,13 @@ def _get_single_dataframe(filename):
     label, _, _ = filename.split(sep=".")
     label = label.split(sep="/")[-1] if "/" in label else label.split(sep="\\")[-1]
     df.insert(loc=0, column='Label', value=label)
-    #df['Label'] = label
+    # df['Label'] = label
     df['Date'] = pd.to_datetime(df['Date'])
-
 
     df['ReturnOpenNext1'] = (df['Open'].shift(-1) - df['Open']) / df['Open']
     df['ReturnOpenPrevious1'] = (df['Open'] - df['Open'].shift(1)) / df['Open'].shift(1)
-    df['ReturnOpenPrevious2']=(df.Open-df.Open.shift(2))/df.Open.shift(2)
-    df['ReturnOpenPrevious5']=(df.Open-df.Open.shift(5))/df.Open.shift(5)
+    df['ReturnOpenPrevious2'] = (df.Open - df.Open.shift(2)) / df.Open.shift(2)
+    df['ReturnOpenPrevious5'] = (df.Open - df.Open.shift(5)) / df.Open.shift(5)
 
     # df['ReturnOpenNext1'] = df['ReturnOpenNext1'].astype(np.float64)
     # df['ReturnOpenPrevious1'] = df['ReturnOpenPrevious1'].astype(np.float64)
@@ -49,6 +47,7 @@ def _get_single_dataframe(filename):
     df['Volume'] = df['Volume'].astype(np.float32)
 
     return df
+
 
 def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=False):
     """
@@ -69,10 +68,10 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
     datapath = os.getenv("DATAPATH")
 
     # Read takes 1 minute for 1000 files
-    filenames = [x for x in os.listdir(datapath) if ( x[-4:] == '.txt' ) and os.path.getsize(datapath + x) > 0]
+    filenames = [x for x in os.listdir(datapath) if (x[-4:] == '.txt') and os.path.getsize(datapath + x) > 0]
     filenames = [datapath + x for x in filenames]
-    filenames = list(set(filenames)) # remove any duplicates
-    filenames = sorted(filenames) # sort so we can resume reading in individual files
+    filenames = list(set(filenames))  # remove any duplicates
+    filenames = sorted(filenames)  # sort so we can resume reading in individual files
 
     if development:
         filenames = filenames[:101]
@@ -89,15 +88,17 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
     print("All dfs are: ", len(all_dfs))
     df = pd.concat(all_dfs, ignore_index=True)
 
-    #Encoding
+    # Encoding
     stock_symbols = np.sort(df['Label'].unique().astype(str))
     encoder_label = {l: idx for idx, l in enumerate(stock_symbols)}
+    decoder_label = dict(map(reversed, encoder_label.items()))
     df['Label'] = [encoder_label.get(i) for i in df['Label']]
     print(df.head(2))
     print("Encode labels: ", encoder_label)
 
     dates = np.sort((df['Date'].unique()))
     encoder_date = {l: idx for idx, l in enumerate(dates)}
+    decoder_date = dict(map(reversed, encoder_date.items()))
     df['Date'] = [encoder_date.get(i) for i in df['Date'].values]
     print(df.head(2))
 
@@ -109,8 +110,10 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
         with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
             pickle.dump({
                 "encoder_label": encoder_label,
+                "decoder_label": decoder_label,
                 "encoder_date": encoder_date,
-                "df":df
+                "decoder_date": decoder_date,
+                "df": df
             }, f, protocol=4)
     else:
         with open(os.getenv("DATA_PICKLE"), "wb") as f:
@@ -120,8 +123,8 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
                 "df": df
             }, f, protocol=4)
 
-
     return df
+
 
 def import_data(development=False):
     """
@@ -137,7 +140,7 @@ def import_data(development=False):
     try:
         with open(pckl_path, "rb") as f:
             obj = pickle.load(f)
-        if not("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
+        if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
             print("Error, not correctly stored")
             return False
 
@@ -148,6 +151,7 @@ def import_data(development=False):
         print("No file found! Importaing data...")
 
     return False
+
 
 def preprocess(X):
     """
@@ -160,6 +164,10 @@ def preprocess(X):
     X_hat = X_hat[X_hat.notnull()]
     X_hat = X_hat[np.isfinite(X_hat)]
     X_hat = X_hat.dropna()
+
+    X_hat = X_hat[~((X_hat.ReturnOpenPrevious5 > 5) | (X_hat.ReturnOpenPrevious5 < -0.75))]
+    X_hat = X_hat[~((X_hat.ReturnOpenNext1 > 5) | (X_hat.ReturnOpenNext1 < -0.75))]
+    X_hat = X_hat.sort_values(['Date', 'Label'])
 
     X_hat.reset_index(inplace=True, drop=True)
 
@@ -180,12 +188,10 @@ def create_train_val_test_split(data):
 
 
 if __name__ == "__main__":
-
     df = preprocess_individual_csvs_to_one_big_csv(development=True)
     print(df.shape)
 
-    df, encoder_date, encoder_label = import_data(development=True, dataframe_format=True)
+    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True, dataframe_format=True)
     print(df.shape)
-
 
     # create_train_val_test_split(full_dataset)
