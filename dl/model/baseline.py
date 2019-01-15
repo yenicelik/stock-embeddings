@@ -49,7 +49,7 @@ class BaselineModel:
             Saves the model
         :return:
         """
-        with open(self.savepath, "wb") as f:
+        with open(self.savepath, "w") as f:
             pickle.dump({
                 "keras_model": self.keras_model,
             }, f)
@@ -60,7 +60,7 @@ class BaselineModel:
         :return:
         """
         # TODO: check if weights are saved with pickle
-        with open(self.savepath, "rb") as f:
+        with open(self.savepath, "r") as f:
             obj = pickle.load(f)
             self.keras_model = obj["keras_model"]
         if not ("keras_model" in obj):
@@ -82,10 +82,10 @@ class BaselineModel:
         :return:
         """
 
-        if load_model:
-            self.load_model()
-            print("Loaded model instead of fitting!")
-            return True
+        # if load_model:
+        #     self.load_model()
+        #     print("Loaded model instead of fitting!")
+        #     return True
 
         from keras.callbacks import EarlyStopping, ModelCheckpoint
 
@@ -94,10 +94,10 @@ class BaselineModel:
         self.keras_model.fit(X, y,
                              # validation_data=(X_valid, y_valid.astype(int)),
                              epochs=6,
-                             verbose=False,
+                             verbose=1,
                              callbacks=[early_stop, check_point])
 
-        self.save_model()
+        # self.save_model()
 
         self.fitted = True
 

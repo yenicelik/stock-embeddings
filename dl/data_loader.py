@@ -34,10 +34,10 @@ def _get_single_dataframe(filename):
     df['ReturnOpenPrevious2']=(df.Open-df.Open.shift(2))/df.Open.shift(2)
     df['ReturnOpenPrevious5']=(df.Open-df.Open.shift(5))/df.Open.shift(5)
 
-    df['ReturnOpenNext1'] = df['ReturnOpenNext1'].astype(np.float32)
-    df['ReturnOpenPrevious1'] = df['ReturnOpenPrevious1'].astype(np.float32)
-    df['ReturnOpenPrevious2'] = df['ReturnOpenPrevious2'].astype(np.float32)
-    df['ReturnOpenPrevious5'] = df['ReturnOpenPrevious5'].astype(np.float32)
+    # df['ReturnOpenNext1'] = df['ReturnOpenNext1'].astype(np.float64)
+    # df['ReturnOpenPrevious1'] = df['ReturnOpenPrevious1'].astype(np.float64)
+    # df['ReturnOpenPrevious2'] = df['ReturnOpenPrevious2'].astype(np.float64)
+    # df['ReturnOpenPrevious5'] = df['ReturnOpenPrevious5'].astype(np.float64)
 
     # print("Until here takes: ", time.time() - start_time)
     # Change dtype to float32 for faster memory access
@@ -50,7 +50,7 @@ def _get_single_dataframe(filename):
 
     return df
 
-def preprocess_individual_csvs_to_one_big_csv(development=False):
+def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=False):
     """
 
     Create a .env file, and input the path to your source data.
@@ -102,34 +102,38 @@ def preprocess_individual_csvs_to_one_big_csv(development=False):
     print(df.head(2))
 
     #Generate matrix out
-    columns = df.columns
-    no_features = len(columns) - 2
+    # columns = df.columns
+    # no_features = len(columns) - 2
 
     # Creating the numpy array which we will output
-    out = np.empty((len(encoder_label), len(encoder_date), no_features))
-    out[:, :, :] = np.nan
-    print(out.shape)
-    matr = df.values
-    print("Matr is: ", matr[:2, :])
-    out[matr[:, 0].astype(np.int), matr[:, 1].astype(np.int)] = matr[:, 2:]  # np.asarray(matr[:, 2:] for i in range(6))
+    # out = np.empty((len(encoder_label), len(encoder_date), no_features))
+    # out[:, :, :] = np.nan
+    # print(out.shape)
+    # matr = df.values
+    # print("Matr is: ", matr[:2, :])
+    # out[matr[:, 0].astype(np.int), matr[:, 1].astype(np.int)] = matr[:, 2:]  # np.asarray(matr[:, 2:] for i in range(6))
 
+
+    # We return the objects immediately, as pickling this file is too big! (if not development!)
+    if (not development) and direct_return:
+        return df, encoder_date, encoder_label
 
     if development:
         with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
             pickle.dump({
                 "encoder_label": encoder_label,
                 "encoder_date": encoder_date,
-                "matr": out,
+                # "matr": out,
                 "df":df
-            }, f)
+            }, f, protocol=4)
     else:
         with open(os.getenv("DATA_PICKLE"), "wb") as f:
             pickle.dump({
                 "encoder_label": encoder_label,
                 "encoder_date": encoder_date,
-                "matr": out,
+                # "matr": out,
                 "df": df
-            }, f)
+            }, f, protocol=4)
 
 
     return df
@@ -157,7 +161,8 @@ def import_data(development=False, dataframe_format=False):
         if not dataframe_format:
             return obj["matr"], obj["encoder_date"], obj["encoder_label"]
 
-    except:
+    except Exception as e:
+        print(e)
         print("No file found! Importaing data...")
 
     return False
@@ -168,8 +173,43 @@ def preprocess(X):
     :param X: df
     :return: df without null rows
     """
-    X_hat = X.loc[~X.isnull().any(axis=1)]
-    X_hat = X_hat.sort_values(['Date', 'Label'])
+    X_hat = X
+    # print("Preprocessing!", X.head())
+    # X_hat = X.loc[~X.isnull()]
+    #
+    # print("Stage 1")
+    # print(X_hat[np.isnan(X_hat)].head())
+    #
+    # X_hat = X_hat.dropna() # wasn't quite the case before!
+    #
+    # print("Stage 2")
+    # print(X_hat[np.isnan(X_hat)].head())
+    #
+    # X_hat = X_hat[~X_hat.isin(['NaN', 'NaT'])]
+    #
+    # print("Stage 3")
+    # print(X_hat[np.isnan(X_hat)].head())
+    #
+    # X_hat = X_hat.sort_values(['Date', 'Label'])
+    #
+    # print("Stage 4")
+    # print(X_hat[np.isnan(X_hat)].head())
+    #
+    # X_hat = X_hat[~np.isnan(X_hat)]
+    #
+    # print("Stage 5")
+    # print(X_hat[np.isnan(X_hat)].head())
+    #
+    #
+    # print("Stage 6")
+    # print(X_hat[np.isnan(X_hat)].head())
+    #
+    # print("Preprocessed!", X_hat.head())
+
+    X_hat = X_hat[X_hat.notnull()]
+    X_hat = X_hat[np.isfinite(X_hat)]
+    X_hat = X_hat.dropna()
+
     X_hat.reset_index(inplace=True, drop=True)
 
     return X_hat

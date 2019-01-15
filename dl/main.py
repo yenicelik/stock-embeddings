@@ -1,26 +1,50 @@
+import numpy as np
+
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from dl.data_loader import preprocess, import_data, preprocess_individual_csvs_to_one_big_csv
+from dl.data_loader import import_data, preprocess_individual_csvs_to_one_big_csv, preprocess
 from dl.model.baseline import BaselineModel
-
 
 def train_kaggle_baseline_model(development, load_model):
 
 
     # TODO: Run the following line once before you run the rest
-    result = preprocess_individual_csvs_to_one_big_csv(development=development)
+    # df, encoder_date, encoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
+    # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
 
     df, encoder_date, encoder_label = import_data(development=development, dataframe_format=True)
+
     print(df.head())
     market_df = preprocess(df)
 
+    print("Market df returned is. ", market_df.head())
+
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     scaler = StandardScaler()
-    # TODO: Make sure that this only feeds in the correct features! (no response variables are fed-in!)
     num_feature_cols = list(market_df.columns[response_col + 1:])
+
+    print("Number of feature columns are: ", num_feature_cols)
+
+    # print(df.loc[~df.isnull().any(axis=1)].head())
+
+    print("Types are: ")
+    print(market_df.head())
+    print(type(market_df['ReturnOpenPrevious5'][0]))
+
+    print("Last time!")
+
+    print(market_df.head())
+    print("Empties!")
+    # TODO: That this is not empty seems to stress me out a bit!!!
+    # market_df = preprocess(market_df)
+    print(market_df[np.isnan(market_df)].head())
+
+
     market_df[num_feature_cols] = scaler.fit_transform(market_df[num_feature_cols])
+
+    print("Done scalar fitting!")
 
     model = BaselineModel(encoder_label, num_feature_cols=num_feature_cols, dev=development)
     model.optimizer_definition()
@@ -58,7 +82,10 @@ if __name__ == "__main__":
     is_linux = (platform == "linux" or platform == "linux2")
     is_dev = not is_linux
 
+    is_dev = False
+    # is_dev = True
+
     print("Running dev: ", is_dev)
 
     # load model if not linux
-    train_kaggle_baseline_model(development=is_dev, load_model=is_dev)
+    train_kaggle_baseline_model(development=is_dev, load_model=False)
