@@ -195,7 +195,6 @@ if __name__ == "__main__":
     X_valid, y_valid = get_input(market_df, market_val_indices)
 
     model.fit(X_train, y_train.astype(int),validation_data=(X_valid, y_valid.astype(int)))
-    # This creacet df
 
     predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
