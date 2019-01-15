@@ -200,11 +200,7 @@ if __name__ == "__main__":
     df = preprocess_individual_csvs_to_one_big_csv(development=True)
     print(df.shape)
 
-<<<<<<< HEAD
     df, encoder_date, encoder_label,decoder_date, decoder_label = import_data(development=True,dataframe_format=True)
-=======
-    df, encoder_date, encoder_label = import_data(development=True, dataframe_format=True)
->>>>>>> c7dc27e075a8ea9e92a7ff7c088218a43cce5fe5
     print(df.shape)
 
 
