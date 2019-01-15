@@ -62,8 +62,7 @@ class BaselineModel:
                 "keras_model": self.keras_model,
             }, f)
 
-<<<<<<< HEAD
-=======
+
     def load_model(self):
         """
             Loads the model
@@ -77,7 +76,7 @@ class BaselineModel:
             assert False, ("Model could not be loaded!")
         self.fitted = True
 
->>>>>>> c7dc27e075a8ea9e92a7ff7c088218a43cce5fe5
+
     def optimizer_definition(self):
         if self.regression:
             self.keras_model.compile(optimizer='adam', loss='mean_squared_error')
@@ -88,10 +87,9 @@ class BaselineModel:
         return self.keras_model.predict(X)
 
 
-    def fit(self, X, y,validation_data=None):
 
-    def fit(self, X, y, load_model=False):
->>>>>>> c7dc27e075a8ea9e92a7ff7c088218a43cce5fe5
+    def fit(self, X, y,validation_data=None, load_model=False):
+
         """
             NOTE! You can also load them model instead of training it!
         :param X: Full dataset
@@ -108,7 +106,7 @@ class BaselineModel:
 
         check_point = ModelCheckpoint('model.hdf5', verbose=True, save_best_only=True)
         early_stop = EarlyStopping(patience=5, verbose=True)
-<<<<<<< HEAD
+
         self.keras_model.fit(X, y,epochs=5,verbose=2,validation_data=validation_data)
                  #validation_data=(X_valid, y_valid.astype(int)),
                  # callbacks=[early_stop, metrics=['accuracy']])
@@ -200,15 +198,9 @@ if __name__ == "__main__":
 
     predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
-=======
-        self.keras_model.fit(X, y,
-                             # validation_data=(X_valid, y_valid.astype(int)),
-                             epochs=6,
-                             verbose=False,
-                             callbacks=[early_stop, check_point])
->>>>>>> c7dc27e075a8ea9e92a7ff7c088218a43cce5fe5
 
-        self.save_model()
 
-        self.fitted = True
+    model.save_model()
+
+    model.fitted = True
 
