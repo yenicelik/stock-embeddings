@@ -92,3 +92,17 @@ LEONHARD_UNAME="yedavid"
  
 -- implement dummy features
 -- Implement autoregression visualization (checking if from one timestep to another it is symmetric or not etc.)
+
+
+
+
+
+#### 
+
+Measurements:
+
+Loss is in "Test/Train"
+| Embedding     | Model         | Significance      | Loss |
+| ------------- |:-------------:| -----------------:| ---- |
+| Yes           | Untrained     | No                | 0.5335276525329812 / 0.5379586053337382
+| Yes           | NN KaggleBase | No                | 0.5348423127145192 / 0.5355827311106535 --> 6 epochs

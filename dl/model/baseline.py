@@ -1,3 +1,7 @@
+"""
+    Fully connected NN taken from
+        https://www.kaggle.com/christofhenkel/market-data-nn-baseline
+"""
 import os
 import pickle
 
@@ -58,7 +62,7 @@ class BaselineModel:
             Saves the model
         :return:
         """
-        with open(self.savepath, "wb") as f:
+        with open(self.savepath, "w") as f:
             pickle.dump({
                 "keras_model": self.keras_model,
             }, f)
@@ -69,7 +73,8 @@ class BaselineModel:
             Loads the model
         :return:
         """
-        with open(self.savepath, "rb") as f:
+        # TODO: check if weights are saved with pickle
+        with open(self.savepath, "r") as f:
             obj = pickle.load(f)
             self.keras_model = obj["keras_model"]
         if not ("keras_model" in obj):
@@ -87,10 +92,7 @@ class BaselineModel:
     def predict(self, X):
         return self.keras_model.predict(X)
 
-
-
-    def fit(self, X, y,validation_data=None, load_model=False):
-
+    def fit(self, X, y, X_val, y_val, load_model=False):
         """
             NOTE! You can also load them model instead of training it!
         :param X: Full dataset
@@ -98,19 +100,22 @@ class BaselineModel:
         :return:
         """
 
-        if load_model:
-            self.load_model()
-            print("Loaded model instead of fitting!")
-            return True
+        # if load_model:
+        #     self.load_model()
+        #     print("Loaded model instead of fitting!")
+        #     return True
 
         from keras.callbacks import EarlyStopping, ModelCheckpoint
 
         check_point = ModelCheckpoint('model.hdf5', verbose=True, save_best_only=True)
         early_stop = EarlyStopping(patience=5, verbose=True)
+        self.keras_model.fit(X, y,
+                             validation_data=(X_val, y_val),
+                             epochs=20,
+                             verbose=1,
+                             callbacks=[early_stop, check_point])
 
-        self.keras_model.fit(X, y,epochs=5,verbose=2,validation_data=validation_data)
-                 #validation_data=(X_valid, y_valid.astype(int)),
-                 # callbacks=[early_stop, metrics=['accuracy']])
+        # self.save_model()
 
 class BaselineModelTensorflow:
     embedding_dimension = 10
@@ -188,12 +193,15 @@ if __name__ == "__main__":
         return X, y,
 
 
-    market_train_indices, market_val_indices = train_test_split(market_df.index, test_size=0.25, random_state=23)
-    a=3
+    market_indices, market_test_indices = train_test_split(market_df.index, test_size=0.1, random_state=23)
+    market_train_indices, market_val_indices = train_test_split(market_indices, test_size=0.1, random_state=23)
+
     X_train, y_train = get_input(market_df, market_train_indices)
     X_valid, y_valid = get_input(market_df, market_val_indices)
+    X_test, y_test = get_input(market_df, market_test_indices)
 
-    model.fit(X_train, y_train.astype(int),validation_data=(X_valid, y_valid.astype(int)))
+    # TODO: Hey Thomas, I changed the signature of the function on how the validaiton data is fed in. I hope this is fine for you! (tell me if not!)
+    model.fit(X_train, y_train.astype(int), X_val=X_valid, y_val=y_valid)
 
     predict_valid = model.predict(X_valid)[:, 0] * 2 - 1
     predict_train = model.predict(X_train)[:, 0] * 2 - 1
