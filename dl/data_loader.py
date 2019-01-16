@@ -144,7 +144,7 @@ def import_data(development=False):
             print("Error, not correctly stored")
             return False
 
-        return obj["df"], obj["encoder_date"], obj["encoder_label"]
+        return obj["df"], obj["encoder_date"], obj["encoder_label"],obj["decoder_date"], obj["decoder_label"]
 
     except Exception as e:
         print(e)
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     df = preprocess_individual_csvs_to_one_big_csv(development=True)
     print(df.shape)
 
-    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True, dataframe_format=True)
+    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True)
     print(df.shape)
 
     # create_train_val_test_split(full_dataset)
