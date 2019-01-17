@@ -8,6 +8,7 @@ from dl.data_loader import import_data, preprocess_individual_csvs_to_one_big_cs
 from dl.model.baseline import BaselineModel
 from dl.model.xgboost_classifier import XGBoostClassifier
 
+# TODO: @Thomas, I am a bit suspicious of the `train_test_split` function. Does it actually do a split according to the first 75% vs the last 25%? (or in this case, 90%/10%)
 
 def train_kaggle_baseline_model(development, is_leonhard):
 
@@ -123,7 +124,7 @@ if __name__ == "__main__":
     is_linux = (platform == "linux" or platform == "linux2")
     is_dev = not is_linux
 
-    # is_dev = False
+    is_dev = False
     # is_dev = True
 
     print("Running dev: ", is_dev)

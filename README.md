@@ -102,7 +102,9 @@ LEONHARD_UNAME="yedavid"
 Measurements:
 
 Loss is in "Test/Train"
-| Embedding     | Model         | Significance      | Loss |
-| ------------- |:-------------:| -----------------:| ---- |
-| Yes           | Untrained     | No                | 0.5335276525329812 / 0.5379586053337382
-| Yes           | NN KaggleBase | No                | 0.5348423127145192 / 0.5355827311106535 --> 6 epochs
+| Embedding     | Model         | Details  | Significance      | Accuracy (Test/Train) |
+| ------------- |:-------------:|----------| -----------------:| ---- |
+| Yes           | Untrained     |          | No                | 0.5335 / 0.5379
+| Yes           | NN KaggleBase | 3 epochs | No                | 0.5348 / 0.5355
+| No            | XGBoost       |          | No                | 0.5356 / 0.5393
+| Yes           | NN KaggleBase |20 epochs | No                | 0.5403 / 0.5422
