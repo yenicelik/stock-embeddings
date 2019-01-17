@@ -14,7 +14,7 @@ class Earthquake:
         result = list()
         for i0_bin in range(number_of_bins):
             if debug: print("i0_bin:{}".format(i0_bin))
-            ResponseSeriesGivenIndex = ResponseSeries[i0_bin == bin_indexis]
+            ResponseSeriesGivenIndex = ResponseSeries.loc[i0_bin == bin_indexis]
             p_given_i0 = np.sum(ResponseSeriesGivenIndex > 0) / len(ResponseSeriesGivenIndex)
             if debug: print("p_given_i0:{}".format(p_given_i0))
             if debug: print("ResponseSeriesGivenIndex.head():\n{}".format(ResponseSeriesGivenIndex.head()))
@@ -26,7 +26,7 @@ class Earthquake:
                     sys.stdout.write('.')
                     sys.stdout.flush()
                 np.random.shuffle(ShuffledCopyResponseSeries.values)
-                ShuffledCopyResponseSeriesGivenIndex = ShuffledCopyResponseSeries[i0_bin == bin_indexis]
+                ShuffledCopyResponseSeriesGivenIndex = ShuffledCopyResponseSeries.loc[i0_bin == bin_indexis]
                 shuffled_p_given_i0 = np.sum(ShuffledCopyResponseSeriesGivenIndex > 0) / len(
                     ShuffledCopyResponseSeriesGivenIndex)
                 shuffled_p_given_i0_list.append(shuffled_p_given_i0)
@@ -75,10 +75,17 @@ if __name__ == "__main__":
     result=Earthquake.earthquake_check(ResponseSeries, ResponseSeries, debug=False)
     print("result:{}".format(result))
     # 4. experiment:. Long input
-    print(market_df.shape)
     ResponseSeries = market_df.ReturnOpenNext1
     PredictorSeries = market_df.ReturnOpenPrevious1
+    print(ResponseSeries.shape)
     result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=10,
-                              number_of_shuffles=10, debug=True)
-    print("result:{}".format(result))
+                              number_of_shuffles=10, debug=False)
+    print("4. experiment:result:{}".format(result))
+    # 5. experiment:. compared to long random input
+    ResponseSeries = pd.Series(np.random.randn(len(ResponseSeries)))
+    PredictorSeries = pd.Series(np.random.randn(len(ResponseSeries)))
+    print(ResponseSeries.shape)
+    result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=10,
+                                         number_of_shuffles=10, debug=False)
+    print("5. experiment:result:{}".format(result))
 
