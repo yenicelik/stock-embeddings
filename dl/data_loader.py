@@ -119,7 +119,9 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
         with open(os.getenv("DATA_PICKLE"), "wb") as f:
             pickle.dump({
                 "encoder_label": encoder_label,
+                "decoder_label": decoder_label,
                 "encoder_date": encoder_date,
+                "decoder_date": decoder_date,
                 "df": df
             }, f, protocol=4)
 

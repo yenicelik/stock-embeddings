@@ -1,4 +1,6 @@
-from dl.data_loader import import_data
+import time
+
+from dl.data_loader import import_data, preprocess_individual_csvs_to_one_big_csv
 from dl.data_loader import preprocess
 import pandas as pd
 import numpy as np
@@ -13,6 +15,7 @@ class Earthquake:
         bin_indexis = pd.qcut(PredictorSeries, number_of_bins, labels=False)
         result = list()
         for i0_bin in range(number_of_bins):
+            start_time = time.time()
             if debug: print("i0_bin:{}".format(i0_bin))
             ResponseSeriesGivenIndex = ResponseSeries.loc[i0_bin == bin_indexis]
             p_given_i0 = np.sum(ResponseSeriesGivenIndex > 0) / len(ResponseSeriesGivenIndex)
@@ -38,6 +41,8 @@ class Earthquake:
                 print("shuffled_p_given_i0_mean:{}".format(shuffled_p_given_i0_mean))
                 print("shuffled_p_given_i0_std:{}".format(shuffled_p_given_i0_std))
                 print("std_distance_given_i0:{}".format(std_distance_given_i0))
+            print("Time for one bin: ", time.time() - start_time)
+
         return (np.mean(np.absolute(result)))
 
     def transform(self, X, Y):
@@ -54,9 +59,15 @@ class Earthquake:
         return X_hat, Y_hat
 
 if __name__ == "__main__":
+
+    number_of_shuffles = 10
+    number_of_bins = 10
+
     print("Testing out Earthquake.earthquake")
-    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True                                                                             )
+    # preprocess_individual_csvs_to_one_big_csv(development=True)
+    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=False)
     market_df = preprocess(market_df)
+    print("Starting serieses")
     # 1. experiment with abb
     abb_label = encoder_label.get("abb")
     abb_df = market_df[market_df.Label == abb_label].reset_index(drop=True)
@@ -78,14 +89,14 @@ if __name__ == "__main__":
     ResponseSeries = market_df.ReturnOpenNext1
     PredictorSeries = market_df.ReturnOpenPrevious1
     print(ResponseSeries.shape)
-    result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=10,
-                              number_of_shuffles=10, debug=False)
+    result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=number_of_bins,
+                              number_of_shuffles=number_of_shuffles, debug=False)
     print("4. experiment:result:{}".format(result))
     # 5. experiment:. compared to long random input
     ResponseSeries = pd.Series(np.random.randn(len(ResponseSeries)))
     PredictorSeries = pd.Series(np.random.randn(len(ResponseSeries)))
     print(ResponseSeries.shape)
-    result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=10,
-                                         number_of_shuffles=10, debug=False)
+    result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=number_of_bins,
+                                         number_of_shuffles=number_of_shuffles, debug=False)
     print("5. experiment:result:{}".format(result))
 
