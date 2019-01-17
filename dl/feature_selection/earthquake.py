@@ -1,13 +1,44 @@
-"""
-    Implements the tsfresh feature algorithm, as writte here
-    https://tsfresh.readthedocs.io/en/latest/
-"""
+from dl.data_loader import import_data
+from dl.data_loader import preprocess
+import pandas as pd
 import numpy as np
+import sys
 
 class Earthquake:
 
     def __init__(self):
         pass
+
+    def earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=4, number_of_shuffles=100, debug=False):
+        bin_indexis = pd.qcut(PredictorSeries, number_of_bins, labels=False)
+        result = list()
+        for i0_bin in range(number_of_bins):
+            if debug: print("i0_bin:{}".format(i0_bin))
+            ResponseSeriesGivenIndex = ResponseSeries[i0_bin == bin_indexis]
+            p_given_i0 = np.sum(ResponseSeriesGivenIndex > 0) / len(ResponseSeriesGivenIndex)
+            if debug: print("p_given_i0:{}".format(p_given_i0))
+            if debug: print("ResponseSeriesGivenIndex.head():\n{}".format(ResponseSeriesGivenIndex.head()))
+
+            ShuffledCopyResponseSeries = ResponseSeries.copy(deep=True)
+            shuffled_p_given_i0_list = list()
+            for i in range(number_of_shuffles):
+                if debug:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                np.random.shuffle(ShuffledCopyResponseSeries.values)
+                ShuffledCopyResponseSeriesGivenIndex = ShuffledCopyResponseSeries[i0_bin == bin_indexis]
+                shuffled_p_given_i0 = np.sum(ShuffledCopyResponseSeriesGivenIndex > 0) / len(
+                    ShuffledCopyResponseSeriesGivenIndex)
+                shuffled_p_given_i0_list.append(shuffled_p_given_i0)
+            shuffled_p_given_i0_mean = np.mean(shuffled_p_given_i0_list)
+            shuffled_p_given_i0_std = np.std(shuffled_p_given_i0_list, ddof=1)
+            std_distance_given_i0 = (p_given_i0 - shuffled_p_given_i0_mean) / shuffled_p_given_i0_std
+            result.append(std_distance_given_i0)
+            if debug:
+                print("shuffled_p_given_i0_mean:{}".format(shuffled_p_given_i0_mean))
+                print("shuffled_p_given_i0_std:{}".format(shuffled_p_given_i0_std))
+                print("std_distance_given_i0:{}".format(std_distance_given_i0))
+        return (np.mean(np.absolute(result)))
 
     def transform(self, X, Y):
         """
@@ -23,14 +54,31 @@ class Earthquake:
         return X_hat, Y_hat
 
 if __name__ == "__main__":
-    print("Testing out tsfresh on a random datasample. (Testing if crashes, mostly) ")
+    print("Testing out Earthquake.earthquake")
+    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True                                                                             )
+    market_df = preprocess(market_df)
+    # 1. experiment with abb
+    abb_label = encoder_label.get("abb")
+    abb_df = market_df[market_df.Label == abb_label].reset_index(drop=True)
+    abb_df.head(10)
+    ResponseSeries=abb_df.ReturnOpenNext1
+    PredictorSeries=abb_df.ReturnOpenPrevious1
+    result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, debug=False)
+    print("result:{}".format(result))
+    # 2. experiment: dompare with random numbers
+    ResponseSeries = pd.Series(np.random.randn(len(ResponseSeries)))
+    PredictorSeries = pd.Series(np.random.randn(len(ResponseSeries)))
+    result=Earthquake.earthquake_check(ResponseSeries, PredictorSeries, debug=False)
+    print("result:{}".format(result))
+    # 3. experiment: compare with full correlation
+    ResponseSeries = abb_df.ReturnOpenNext1
+    result=Earthquake.earthquake_check(ResponseSeries, ResponseSeries, debug=False)
+    print("result:{}".format(result))
+    # 4. experiment:. Long input
+    print(market_df.shape)
+    ResponseSeries = market_df.ReturnOpenNext1
+    PredictorSeries = market_df.ReturnOpenPrevious1
+    result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=10,
+                              number_of_shuffles=10, debug=True)
+    print("result:{}".format(result))
 
-    n_stocks = 1000
-    n_dates = 10000
-    n_features = 200
-
-    X_train = np.random.random((n_stocks, n_dates, n_features))
-    Y_train = np.random.random((n_stocks, n_dates, n_features))
-
-    transformer = Earthquake()
-    X_hat = transformer.transform(X_train, Y_train)
