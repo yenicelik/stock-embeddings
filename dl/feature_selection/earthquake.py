@@ -12,10 +12,13 @@ class Earthquake:
         pass
 
     def earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=4, number_of_shuffles=100, debug=False):
+
         bin_indexis = pd.qcut(PredictorSeries, number_of_bins, labels=False)
         result = list()
+
         for i0_bin in range(number_of_bins):
             start_time = time.time()
+
             if debug: print("i0_bin:{}".format(i0_bin))
             ResponseSeriesGivenIndex = ResponseSeries.loc[i0_bin == bin_indexis]
             p_given_i0 = np.sum(ResponseSeriesGivenIndex > 0) / len(ResponseSeriesGivenIndex)
@@ -48,26 +51,36 @@ class Earthquake:
     def transform(self, X, Y):
         """
 
-        :param X:
-        :param Y:
+        :param X: is a dataframe
+        :param Y: is the dataframe of the response variable
+        (must be aligned on the row-index to the dataframe of the input variables)
         :return:
         """
         # TODO: implement the algorithm which transformation which takes in X and returns a modified (X -> X_hat)
+
+
 
         X_hat = X
         Y_hat = Y
         return X_hat, Y_hat
 
-if __name__ == "__main__":
+def testcase_1():
+    """
+        The testcase that thomas had written
+    :return:
+    """
 
     number_of_shuffles = 10
     number_of_bins = 10
 
+    development=True
+
     print("Testing out Earthquake.earthquake")
-    # preprocess_individual_csvs_to_one_big_csv(development=True)
-    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=False)
+    # preprocess_individual_csvs_to_one_big_csv(development=development)
+    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=development)
     market_df = preprocess(market_df)
     print("Starting serieses")
+
     # 1. experiment with abb
     abb_label = encoder_label.get("abb")
     abb_df = market_df[market_df.Label == abb_label].reset_index(drop=True)
@@ -76,15 +89,18 @@ if __name__ == "__main__":
     PredictorSeries=abb_df.ReturnOpenPrevious1
     result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, debug=False)
     print("result:{}".format(result))
+
     # 2. experiment: dompare with random numbers
     ResponseSeries = pd.Series(np.random.randn(len(ResponseSeries)))
     PredictorSeries = pd.Series(np.random.randn(len(ResponseSeries)))
     result=Earthquake.earthquake_check(ResponseSeries, PredictorSeries, debug=False)
     print("result:{}".format(result))
+
     # 3. experiment: compare with full correlation
     ResponseSeries = abb_df.ReturnOpenNext1
     result=Earthquake.earthquake_check(ResponseSeries, ResponseSeries, debug=False)
     print("result:{}".format(result))
+
     # 4. experiment:. Long input
     ResponseSeries = market_df.ReturnOpenNext1
     PredictorSeries = market_df.ReturnOpenPrevious1
@@ -92,6 +108,7 @@ if __name__ == "__main__":
     result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, number_of_bins=number_of_bins,
                               number_of_shuffles=number_of_shuffles, debug=False)
     print("4. experiment:result:{}".format(result))
+
     # 5. experiment:. compared to long random input
     ResponseSeries = pd.Series(np.random.randn(len(ResponseSeries)))
     PredictorSeries = pd.Series(np.random.randn(len(ResponseSeries)))
@@ -100,3 +117,68 @@ if __name__ == "__main__":
                                          number_of_shuffles=number_of_shuffles, debug=False)
     print("5. experiment:result:{}".format(result))
 
+def testcase_rolling_apply():
+    """
+        Applies the above function for rolling over the
+        entire dataframe (like a 1d convolutional filter)
+    :return:
+    """
+
+    number_of_shuffles = 10
+    number_of_bins = 10
+    window_size = 10000 # I guess this is an ok window size (approximately per stock)
+
+    development = True
+
+    print("Testing out Earthquake.earthquake")
+    # preprocess_individual_csvs_to_one_big_csv(development=development)
+    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=development)
+    market_df = preprocess(market_df)
+    print("Starting serieses")
+    print("Market df is: ", market_df)
+
+    # 1. experiment with abb
+    abb_label = encoder_label.get("abb")
+    abb_df = market_df[market_df.Label == abb_label].reset_index(drop=True)
+    abb_df.head(10)
+    ResponseSeries=abb_df.ReturnOpenNext1
+    PredictorSeries=abb_df.ReturnOpenPrevious1
+
+    # lambda functoin we apply over rolling feature
+    def earthquake_rowwise(x):
+        """
+            x must be one individual row from the python row
+        :param x:
+        :return:
+        """
+        result = Earthquake.earthquake_check(x.ReturnOpenPrevious1, x.ReturnOpenNext1, debug=False)
+        return result
+
+    market_df['significance'] = None
+
+    print("Now applying rolling features")
+    for i in range(0, len(market_df), window_size):
+        result = earthquake_rowwise(market_df.iloc[i:i+window_size])
+        market_df.iloc[i:i+window_size, -1] = result
+        print("Result is: ", result)
+
+    print("Tail is: ")
+    print(market_df.tail(10))
+    print("Head is:")
+    print(market_df.head(10))
+
+
+
+    # result = market_df.rolling(window=10).apply(earthquake_rowwise)
+    # print("Results are: ", result)
+
+    # market_df.rolling_apply()
+    # result = Earthquake.earthquake_check(ResponseSeries, PredictorSeries, debug=False)
+    # print("result:{}".format(result))
+
+
+
+if __name__ == "__main__":
+
+    # testcase_1()
+    testcase_rolling_apply()

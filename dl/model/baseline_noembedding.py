@@ -18,12 +18,12 @@ from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 
 
-class BaselineModel:
+class BaselineModelNoEmbedding:
     embedding_dimension = 10
 
     @property
     def name(self):
-        return "model_kaggle_basepath"
+        return "model_kaggle_noembedding_basepath"
 
     def __init__(self, encoder_label, num_feature_cols, dev=False,regression=False):
         self.regression=regression
@@ -33,9 +33,7 @@ class BaselineModel:
         self.fitted = False
 
         label_input = Input(shape=[1], name="label_input")
-        label_embedding = Embedding(len(encoder_label), self.embedding_dimension)(label_input)
-        label_logits = Flatten()(label_embedding)
-        label_logits = Dense(32, activation='relu')(label_logits)
+        # Simply ignore these input labels. For simplicity, keep the code here
 
         numerical_inputs = Input(shape=(len(num_feature_cols),), name='num_input')
         numerical_logits = numerical_inputs
@@ -44,8 +42,7 @@ class BaselineModel:
         numerical_logits = Dense(128, activation='relu')(numerical_logits)
         numerical_logits = Dense(64, activation='relu')(numerical_logits)
 
-        logits = Concatenate()([numerical_logits, label_logits])
-        logits = Dense(64, activation='relu')(logits)
+        logits = Dense(64, activation='relu')(numerical_logits)
         if regression:
             out = Dense(1,)(logits)
         else:
@@ -132,7 +129,6 @@ class BaselineModelTensorflow:
         self.input_y = tf.placeholder(tf.int32, shape=[None, 2], name="input_y")
 
 
-
         logits = Dense(64, activation='relu')(logits)
         out = Dense(1, activation='sigmoid')(logits)
         #out = Dense(1, )(logits)
@@ -141,34 +137,10 @@ class BaselineModelTensorflow:
 
     #def model_definition(self):
 
-    def optimizer_definition(self):
-        pass
-
-    def single_pass(self, X_batch, Y_batch):
-        pass
-
-    def predict(self, X):
-        return self.keras_model.predict(X)
-
-    def fit(self, X, y):
-       pass
-
-
-class DecisionTree:
-
-    def __init__(self):
-        pass
-
-    def transform(self, X):
-        pass
-
-    def fit(self, X, Y):
-        pass
-
 
 if __name__ == "__main__":
 
-    df, encoder_date, encoder_label,decoder_date, decoder_label = import_data(development=True,dataframe_format=True)
+    df, encoder_date, encoder_label,decoder_date, decoder_label = import_data(development=True)
     market_df=preprocess(df)
 
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
@@ -176,7 +148,7 @@ if __name__ == "__main__":
     num_feature_cols = list(market_df.columns[response_col + 1:])
     market_df[num_feature_cols] = scaler.fit_transform(market_df[num_feature_cols])
 
-    model=BaselineModel(encoder_label,num_feature_cols)
+    model=BaselineModelNoEmbedding(encoder_label,num_feature_cols)
     model.keras_model.summary()
     model.optimizer_definition()
 
