@@ -16,6 +16,7 @@ from tsfresh.utilities.dataframe_functions import roll_time_series
 from dl.data_loader import import_data
 
 
+# TODO: Also do a rolling apply on this one?
 class TSFresh:
 
     def __init__(self):

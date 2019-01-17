@@ -151,6 +151,7 @@ def testcase_rolling_apply():
         :param x:
         :return:
         """
+        # TODO: Any other features that could be important here?
         result = Earthquake.earthquake_check(x.ReturnOpenPrevious1, x.ReturnOpenNext1, debug=False)
         return result
 
