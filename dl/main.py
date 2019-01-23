@@ -1,4 +1,6 @@
-import numpy as np
+import argparse
+
+
 
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -7,9 +9,9 @@ from sklearn.preprocessing import StandardScaler
 from dl.data_loader import import_data, preprocess_individual_csvs_to_one_big_csv, preprocess
 from dl.model.baseline import BaselineModel
 from dl.model.baseline_noembedding import BaselineModelNoEmbedding
-from dl.model.xgboost_classifier import XGBoostClassifier
+#from dl.model.xgboost_classifier import XGBoostClassifier
 
-# TODO: @Thomas, I am a bit suspicious of the `train_test_split` function. Does it actually do a split according to the first 75% vs the last 25%? (or in this case, 90%/10%)
+
 
 def train_kaggle_baseline_model(development, is_leonhard):
 
@@ -66,7 +68,7 @@ def train_kaggle_baseline_model(development, is_leonhard):
 def train_kaggle_baseline_noembedding_model(development, is_leonhard):
 
     if is_leonhard:
-        df, encoder_date, encoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
+        df, encoder_date, encoder_label,decoder_date_decoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
     else:
         # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
         df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=development)
@@ -170,20 +172,27 @@ def train_xgboost_model(development, is_leonhard):
 
 if __name__ == "__main__":
     print("Starting script!")
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--production', action='store_true', default=False,
+                        help='production')
+    args = parser.parse_args()
+    print("Arguments: production:{}".format(args.production))
 
     from sys import platform
 
 
     # Make dev true if on linux machine!
     is_linux = (platform == "linux" or platform == "linux2")
-    is_dev = not is_linux
+    #is_dev = False
+    is_dev = not args.production
+    print("Running is_linux:{}, is_dev_{}: ".format(is_linux,is_dev))
 
-    is_dev = False
-    # is_dev = True
+    res= preprocess_individual_csvs_to_one_big_csv(development=is_dev)
 
-    print("Running dev: ", is_dev)
+    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=is_dev)
+    print("df.shape:{}, len(encoder_date):{}, len(encoder_label):{}".format(df.shape,len(encoder_date),len(encoder_label)))
 
     # load model if not linux
     # train_kaggle_baseline_model(development=is_dev, is_leonhard=is_linux)
     # train_xgboost_model(development=is_dev, is_leonhard=is_linux)
-    train_kaggle_baseline_noembedding_model(development=is_dev, is_leonhard=is_linux)
+    #train_kaggle_baseline_noembedding_model(development=is_dev, is_leonhard=is_linux)

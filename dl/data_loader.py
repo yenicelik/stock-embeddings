@@ -103,8 +103,8 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
     print(df.head(2))
 
     # We return the objects immediately, as pickling this file is too big! (if not development!)
-    if (not development) and direct_return:
-        return df, encoder_date, encoder_label
+    if  direct_return:
+        return df, encoder_date, encoder_label,decoder_date,decoder_label
 
     if development:
         with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
