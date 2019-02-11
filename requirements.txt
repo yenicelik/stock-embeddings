@@ -8,4 +8,4 @@ keras==2.2.4
 h5py
 xgboost
 pandas
-sklearn
+scikit-learn
