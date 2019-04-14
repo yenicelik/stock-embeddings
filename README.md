@@ -37,6 +37,26 @@ https://www.kaggle.com/borismarjanovic/price-volume-data-for-all-us-stocks-etfs/
 ```
 Download the data into the `data` folder inside the root directory of this project.
  
+ - Please create a file called ".env" in the root directory of this project,
+and write to the file the following item:
+ 
+ ```
+LEONHARD_UNAME="yedavid"
+
+DATAPATH="/Users/david/deeplearning/data/Data/Stocks/"
+
+DATAPATH_PROCESSED="/Users/david/deeplearning/data/processed/all.csv"
+DATAPATH_PROCESSED_DEV="/Users/david/deeplearning/data/processed/dev.csv"
+
+DATA_PICKLE="/Users/david/deeplearning/data/processed/pickle.pkl"
+DATA_PICKLE_DEV="/Users/david/deeplearning/data/processed/pickle_dev.pkl"
+
+MODEL_SAVEPATH_BASEPATH="/Users/david/deeplearning/data/"
+
+
+ ```
+ (i..e instead of yedavid, use your username - the same goes for paths)
+
 -----
 
 
@@ -44,29 +64,29 @@ The following are the current todo's.
 You can declare new todos in 1. the repo issues, or 2. here in the readme.
 
 Peripheral:
-- [ ] Data loader and preprocessor
-- [ ] Batch loader for training set
-- [ ] Batch loader for validation set
-- [ ] Batch loader for test set
-- [ ] Automatic deployment to Leonhard, and automated download of saved weights
+- [x] Data loader and preprocessor
+- [x] Batch loader for training set
+- [x] Batch loader for validation set
+- [x] Batch loader for test set
+- [x] Automatic deployment to Leonhard, and automated download of saved weights
 - [x] Setup environment for feature algorithms, debug tools, prediction algorithms, and other features
 
 Debug tools:
-- [ ] Tensorboard coupled to training loss and validation loss
-- [ ] Predictor on validation / test dataset
+- [] Tensorboard coupled to training loss and validation loss
+- [] Predictor on validation / test dataset
 
 Feature selection algorithms:
 - [ ] Earth quake significance prediction algorithm
 - [ ] "tsfresh": https://tsfresh.readthedocs.io/en/latest/
 - [ ] PCA
 - [ ] "Shap value": https://github.com/slundberg/shap
-- [ ] "Word Embeddings" for Ticker symbols
+- [x] "Word Embeddings" for Ticker symbols
 
 Prediction algorithms:
 - [ ] LSTM (Baseline from Kaggle)
 
 Other features:
-- [ ] Loss function
+- [x] Loss function
 
 
 
@@ -82,13 +102,6 @@ Or what exactly do we want to predict?
 ----
 Backlog (ignore for now)
 
-- Please create a file called ".env" in the root directory of this project,
-and write to the file the following item:
- 
- ```
-LEONHARD_UNAME="yedavid"
- ```
- (i..e instead of yedavid, use your username)
  
 -- implement dummy features
 -- Implement autoregression visualization (checking if from one timestep to another it is symmetric or not etc.)
@@ -99,12 +112,4 @@ LEONHARD_UNAME="yedavid"
 
 #### 
 
-Measurements:
-
-Loss is in "Test/Train"
-| Embedding     | Model         | Details  | Significance      | Accuracy (Test/Train) |
-| ------------- |:-------------:|----------| -----------------:| ---- |
-| Yes           | Untrained     |          | No                | 0.5335 / 0.5379
-| Yes           | NN KaggleBase | 3 epochs | No                | 0.5348 / 0.5355
-| No            | XGBoost       |          | No                | 0.5356 / 0.5393
-| Yes           | NN KaggleBase |20 epochs | No                | 0.5403 / 0.5422
+# TODO: Also include the loss (graphs for each one possibly)

@@ -7,3 +7,4 @@ tsfresh==0.11.1
 keras==2.2.4
 h5py
 xgboost
+seaborn==0.9.0

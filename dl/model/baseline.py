@@ -49,7 +49,7 @@ class BaselineModel:
         if regression:
             out = Dense(1,)(logits)
         else:
-            out = Dense(1, activation='sigmoid')(logits)
+            out = Dense(1, activation='a')(logits)
         self.keras_model = Model(inputs=[label_input, numerical_inputs], outputs=out)
 
     def save_model(self):
@@ -152,18 +152,6 @@ class BaselineModelTensorflow:
 
     def fit(self, X, y):
        pass
-
-
-class DecisionTree:
-
-    def __init__(self):
-        pass
-
-    def transform(self, X):
-        pass
-
-    def fit(self, X, Y):
-        pass
 
 
 if __name__ == "__main__":

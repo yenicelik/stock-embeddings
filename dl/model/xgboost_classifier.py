@@ -3,7 +3,7 @@ from xgboost import XGBClassifier
 class XGBoostClassifier:
 
     def __init__(self):
-        self.model = XGBClassifier(n_jobs=4,n_estimators=200,max_depth=8,eta=0.1)
+        self.model = XGBClassifier(n_jobs=4, n_estimators=200, max_depth=8, eta=0.1)
 
     def transform(self, X):
         pass
