@@ -46,8 +46,8 @@ def train_kaggle_baseline_model(market_df, development):
         return X, y,
 
 
-    market_indices, market_test_indices = train_test_split(market_df.index, test_size=0.1, random_state=23)
-    market_train_indices, market_val_indices = train_test_split(market_indices, test_size=0.1, random_state=23)
+    market_indices, market_test_indices = train_test_split(market_df.index, shuffle=False, test_size=0.1, random_state=23)
+    market_train_indices, market_val_indices = train_test_split(market_indices, shuffle=False, test_size=0.1, random_state=23)
 
     X_train, y_train = get_input(market_df, market_train_indices)
     X_valid, y_valid = get_input(market_df, market_val_indices)
@@ -116,6 +116,8 @@ def train_kaggle_baseline_noembedding_model(development, is_leonhard):
     print("Train: ", accuracy_score(predict_train > 0, y_train > 0))
     print("Validation: ", accuracy_score(predict_valid > 0, y_valid > 0))
     print("Test: ", accuracy_score(predict_test > 0, y_test > 0))
+
+    model.save_model()
 
 def train_kaggle_baseline_earthquake_model(development, is_leonhard):
 
@@ -399,9 +401,10 @@ if __name__ == "__main__":
     is_dev = False
     # is_dev = True
 
+    # is_dev = not args.production
+    print("Running is_linux:{}, is_dev_{}: ".format(is_linux, is_dev))
+
     print("Running dev: ", is_dev)
-    is_dev = not args.production
-    print("Running is_linux:{}, is_dev_{}: ".format(is_linux,is_dev))
     if args.create_big_csv:
         res= preprocess_individual_csvs_to_one_big_csv(development=is_dev)
 

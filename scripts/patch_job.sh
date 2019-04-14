@@ -7,7 +7,7 @@ export PYTHONPATH="${PYTHONPATH}:~/"
 bsub -W 32:00 -R "rusage[mem=16000, ngpus_excl_p=1]" python ~/deeplearning/dl/main.py
 bsub -I -R "rusage[mem=16000, ngpus_excl_p=1]" python ~/deeplearning/dl/main.py
 
-chmod 777 ~/deeplearning/dl/main.py
+chmod -R 777 ~/deeplearning/dl/main.py
 
 #From https://scicomp.ethz.ch/wiki/Getting_started_with_GPUs#Tensorflow_example
 #For example, to run a serial job with one GPU,

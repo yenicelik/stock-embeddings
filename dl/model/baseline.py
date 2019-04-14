@@ -36,7 +36,7 @@ class BaselineModel:
         self.regression=regression
         self.savepath = os.getenv("MODELPATH_DIR") + self.name
         self.savepath = self.savepath + "_dev.pkl" if development else self.savepath + ".pkl"
-        self.keras_modelcheckpoint_path=os.getenv("MODELPATH_DIR")+ self.name
+        self.keras_modelcheckpoint_path=os.getenv("MODELPATH_DIR") + self.name
         self.keras_modelcheckpoint_path=self.keras_modelcheckpoint_path+"_keras_dev.hdf5" if development else self.keras_modelcheckpoint_path + "_keras.hdf5"
         self.fitted = False
 
@@ -110,9 +110,11 @@ class BaselineModel:
         early_stop = EarlyStopping(patience=5, verbose=True)
         self.keras_model.fit(X, y,
                              validation_data=(X_val, y_val),
-                             epochs=20,
+                             epochs=6,
                              verbose=1,
                              callbacks=[early_stop, check_point])
+
+        print("Embedding dimensions are: ", self.embedding_dimension)
 
         # self.save_model()
 

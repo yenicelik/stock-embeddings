@@ -1,17 +1,12 @@
 Here are some actionable items.
 Once we work on these items, we can probably hand it in for publication at a conference or journal as given by Lukas.
 
-
 ### Still TODO
 
 - [ ] Stock embeddings require more details.
-    - [ ] Implement model sving and model restore? (David)
-    - [ ] Extract trained embeddings? (David)  
     - [ ] Mathematically, why would stock embeddings capture more information? (Thomas)
-    - [ ] Provide a more detailed analysis on the stock embeddings. (i.e. take code from word embeddings to visualize, and just visualize them). (Thomas) 
     - [ ] What happens when you interpolate the stock embeddings in the stock embedding space? (Thomas)
     - [ ] Can you learn something about stock similarity from the embeddings? (Thomas)
-    - [ ] Check what different embedding sizes produce (i.e. another table?) (David)
 
 - [ ] Elaborate on how much "signal" there is in the raw numbers data. 
 Specifically, referring to the comment: deep learning is successful whenever there is a signal in the data, e.g. input-output correlations. 
@@ -22,20 +17,25 @@ You could have elaborated also on applying deep learning to secondary data e.g. 
 - [ ] Compare to RNNs (David)
 
 - [ ] e.g. f_0 in Table I is left undefined (I am guessing it is 0.0087) and unmotivated (Kostas, Thomas)
-- [ ] it is said that the task is classification but is it binary (up or down) or multiclass (up by 1-5 points, up by 6-10 points etc.)? ->Finally mentioned in V.B (David)
 - [ ] The reshuffling and r* stuff is not explained very well. (Thomas, Kostas, Miller) 
 - [ ] A verb is missing in the sentence "On the other hand by the reshuffling..." (Thomas, Kostas, Miller)
 
 - [ ] Selected features are not given 0_0???? what does this mean? --> Unclear what the TA meant by this I think. 
-- [ ] Do not apply earthquake selection on features, but on input (i.e. no feature-engineering)! (Thomas, David)
+- [ ] Do not apply earthquake selection on features, but on input (i.e. no feature-engineering)! (Thomas, David) Be more explicit that this is done on both input and on other features, and that the correlaiton measure can choose amongst those!
 
 - [ ] Visualize a time-series model for the benchmarks (i.e. tickers which say "up"/"down") (David, Lukas)
 - [ ] Check if there's survivorship bias in the data. (Kostas, Thomas)
 
-- [ ] Add a section: Literature research. It exists already here and there, but a more elaborate version would be nice (Lukas)
-
 ### Done
 
+- [x] Add a section: Literature research. It exists already here and there, but a more elaborate version would be nice (Lukas)
+
+- [x] Extract trained embeddings? (David)  
+- [x] Provide a more detailed analysis on the stock embeddings. (i.e. take code from word embeddings to visualize, and just visualize them). (David) 
+
+- [x] Check what different embedding sizes produce (i.e. another table?) (David)
+- [x] it is said that the task is classification but is it binary (up or down) or multiclass (up by 1-5 points, up by 6-10 points etc.)? ->Finally mentioned in V.B (David)
+- [x] Implement model saving and model restore? (David)
 - [x] Specifically what is the input? (David)
 - [x] What do the dimensions look like? (David)
 - [x] Elaborate on the motivation of the stock embeddings. Explain intuitively, why stock embeddings should help. What is the motivation to use stock embeddings? (David) 

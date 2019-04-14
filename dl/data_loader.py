@@ -149,20 +149,25 @@ def import_data(development=False):
     pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
     pkl_file = pkl_dir + "pickle_dev.pkl" if development else pkl_dir + "pickle.pkl"
 
-    try:
-        with open(pkl_file, "rb") as f:
-            obj = pickle.load(f)
-        if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
-            print("Error, not correctly stored")
-            return False
+    # try:
+    #     with open(pkl_file, "rb") as f:
+    #         obj = pickle.load(f)
+    #     if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
+    #         print("Error, not correctly stored")
+    #         return False
+    #
+    #     return obj["df"], obj["encoder_date"], obj["encoder_label"],obj["decoder_date"], obj["decoder_label"]
+    # except Exception as e:
+    #     print(e)
+    #     print("No file found! Importaing data...")
 
-        return obj["df"], obj["encoder_date"], obj["encoder_label"],obj["decoder_date"], obj["decoder_label"]
+    with open(pkl_file, "rb") as f:
+        obj = pickle.load(f)
+    if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
+        print("Error, not correctly stored")
+        return False
 
-    except Exception as e:
-        print(e)
-        print("No file found! Importaing data...")
-
-    return False
+    return obj["df"], obj["encoder_date"], obj["encoder_label"], obj["decoder_date"], obj["decoder_label"]
 
 
 def preprocess(X):
@@ -206,10 +211,10 @@ def create_train_val_test_split(data):
 
 
 if __name__ == "__main__":
-    df = preprocess_individual_csvs_to_one_big_csv(development=True)
+    df = preprocess_individual_csvs_to_one_big_csv(development=False)
     print(df.shape)
 
-    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True)
+    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=False)
     print(df.shape)
 
     # create_train_val_test_split(full_dataset)

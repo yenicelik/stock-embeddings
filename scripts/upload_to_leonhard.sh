@@ -9,4 +9,5 @@ rsync -rv \
 --exclude=/data/ \
 --exclude=/.env \
 --include=/data/processed/all.csv \
+--include=/data/processed/ \
 ~/deeplearning/ yedavid@login.leonhard.ethz.ch:~/deeplearning/ --progress --ignore-times
