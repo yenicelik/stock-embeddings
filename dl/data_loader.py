@@ -3,7 +3,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-
+from sklearn.preprocessing import StandardScaler
 import multiprocessing
 
 from dotenv import load_dotenv
@@ -60,11 +60,12 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
     # UPDATE: returns a pandas dataframe
 
     :param directory: A directory (string)
+    :param development: A boolean
     :return: A numpy array of size (stocks, dates, features).
     """
     import pandas as pd
 
-    datapath = os.getenv("DATAPATH")
+    datapath = os.getenv("DATAPATH_DIR")
 
     # Read takes 1 minute for 1000 files
     filenames = [x for x in os.listdir(datapath) if (x[-4:] == '.txt') and os.path.getsize(datapath + x) > 0]
@@ -92,14 +93,11 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
     encoder_label = {l: idx for idx, l in enumerate(stock_symbols)}
     decoder_label = dict(map(reversed, encoder_label.items()))
     df['Label'] = [encoder_label.get(i) for i in df['Label']]
-    print(df.head(2))
-    print("Encode labels: ", encoder_label)
 
     dates = np.sort((df['Date'].unique()))
     encoder_date = {l: idx for idx, l in enumerate(dates)}
     decoder_date = dict(map(reversed, encoder_date.items()))
     df['Date'] = [encoder_date.get(i) for i in df['Date'].values]
-    print(df.head(2))
 
     # We return the objects immediately, as pickling this file is too big! (if not development!)
     if direct_return:
@@ -124,6 +122,18 @@ def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=F
                 "df": df
             }, f, protocol=4)
 
+    if  direct_return:
+        return df, encoder_date, encoder_label,decoder_date,decoder_label
+    pkl_dir=os.getenv("DATAPATH_PROCESSED_DIR")
+    pkl_file=pkl_dir + "all_dev.pkl" if development else pkl_dir + "all.pkl"
+
+    with open(pkl_file, "wb") as f:
+        pickle.dump({
+            "encoder_label": encoder_label,
+            "decoder_label": decoder_label,
+            "encoder_date": encoder_date,
+            "decoder_date": decoder_date,
+            "df": df}, f, protocol=4)
     return df
 
 
@@ -136,10 +146,11 @@ def import_data(development=False):
 
     # Check if loading is possible
 
-    pckl_path = os.getenv("DATA_PICKLE_DEV") if development else os.getenv("DATA_PICKLE")
+    pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
+    pkl_file = pkl_dir + "all_dev.pkl" if development else pkl_dir + "all.pkl"
 
     try:
-        with open(pckl_path, "rb") as f:
+        with open(pkl_file, "rb") as f:
             obj = pickle.load(f)
         if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
             print("Error, not correctly stored")
@@ -169,6 +180,12 @@ def preprocess(X):
     X_hat = X_hat[~((X_hat.ReturnOpenPrevious5 > 5) | (X_hat.ReturnOpenPrevious5 < -0.75))]
     X_hat = X_hat[~((X_hat.ReturnOpenNext1 > 5) | (X_hat.ReturnOpenNext1 < -0.75))]
     X_hat = X_hat.sort_values(['Date', 'Label'])
+
+    response_col = X_hat.columns.get_loc("ReturnOpenNext1")
+    scaler = StandardScaler()
+    numerical_feature_cols = list(X_hat.columns[response_col + 1:])
+    X_hat[numerical_feature_cols] = scaler.fit_transform(X_hat[numerical_feature_cols])
+    print("Done scalar fitting!")
 
     X_hat.reset_index(inplace=True, drop=True)
 

@@ -8,3 +8,5 @@ keras==2.2.4
 h5py
 xgboost
 seaborn==0.9.0
+pandas
+scikit-learn
