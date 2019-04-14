@@ -45,6 +45,8 @@ class BaselineModel:
         label_logits = Flatten()(label_embedding)
         label_logits = Dense(32, activation='relu')(label_logits)
 
+        print("Number of numerical inputs is: ", number_of_numerical_inputs)
+
         numerical_inputs = Input(shape=(number_of_numerical_inputs,), name='num_input')
         numerical_logits = numerical_inputs
         numerical_logits = BatchNormalization()(numerical_logits)  # I do not think this makes sense, since we scaler.fit_transform
@@ -56,7 +58,7 @@ class BaselineModel:
         if regression:
             out = Dense(1,)(logits)
         else:
-            out = Dense(1, activation='a')(logits)
+            out = Dense(1, activation='sigmoid')(logits)
         self.keras_model = Model(inputs=[label_input, numerical_inputs], outputs=out)
         if self.regression:
             self.keras_model.compile(optimizer='adam', loss='mean_squared_error')

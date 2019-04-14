@@ -4,7 +4,9 @@ Once we work on these items, we can probably hand it in for publication at a con
 
 ### Still TODO
 
-- [ ] Stock embeddings require more details. 
+- [ ] Stock embeddings require more details.
+    - [ ] Implement model sving and model restore? (David)
+    - [ ] Extract trained embeddings? (David)  
     - [ ] Mathematically, why would stock embeddings capture more information? (Thomas)
     - [ ] Provide a more detailed analysis on the stock embeddings. (i.e. take code from word embeddings to visualize, and just visualize them). (Thomas) 
     - [ ] What happens when you interpolate the stock embeddings in the stock embedding space? (Thomas)

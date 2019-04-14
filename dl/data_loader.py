@@ -147,7 +147,7 @@ def import_data(development=False):
     # Check if loading is possible
 
     pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
-    pkl_file = pkl_dir + "all_dev.pkl" if development else pkl_dir + "all.pkl"
+    pkl_file = pkl_dir + "pickle_dev.pkl" if development else pkl_dir + "pickle.pkl"
 
     try:
         with open(pkl_file, "rb") as f:

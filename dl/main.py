@@ -16,22 +16,26 @@ from dl.model.xgboost_classifier import XGBoostClassifier
 
 # TODO: @Thomas, I am a bit suspicious of the `train_test_split` function. Does it actually do a split according to the first 75% vs the last 25%? (or in this case, 90%/10%)
 
-def train_kaggle_baseline_model(development, is_leonhard):
-
-    if is_leonhard:
-        df, encoder_date, encoder_label, decoder_date, decoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
-    else:
-        # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
-        df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=development)
-
-#from dl.model.xgboost_classifier import XGBoostClassifier
-
+# def train_kaggle_baseline_model(development, is_leonhard):
+#
+#     if is_leonhard:
+#         df, encoder_date, encoder_label, decoder_date, decoder_label = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=True)
+#     else:
+#         # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
+#         df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=development)
+#
+# #from dl.model.xgboost_classifier import XGBoostClassifier
+#
 
 
 def train_kaggle_baseline_model(market_df, development):
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     numerical_feature_cols = list(market_df.columns[response_col + 1:])
-    model = BaselineModel(encoder_label, numerical_feature_cols, development=development)
+    model = BaselineModel(
+        encoder_label,
+        number_of_numerical_inputs=len(numerical_feature_cols),
+        development=development
+    )
     model.keras_model.summary()
 
     def get_input(market_df, indices):
@@ -390,10 +394,10 @@ if __name__ == "__main__":
 
     # Make dev true if on linux machine!
     is_linux = (platform == "linux" or platform == "linux2")
-    is_dev = not is_linux
+    # is_dev = not is_linux
 
     is_dev = False
-    is_dev = True
+    # is_dev = True
 
     print("Running dev: ", is_dev)
     is_dev = not args.production
@@ -404,13 +408,13 @@ if __name__ == "__main__":
     df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=is_dev)
     market_df = preprocess(df)
     # load model if not linux
-    train_kaggle_baseline_model(development=is_dev, is_leonhard=is_linux)
+    # train_kaggle_baseline_model(development=is_dev, is_leonhard=is_linux)
     # train_xgboost_model(development=is_dev, is_leonhard=is_linux)
     # train_kaggle_baseline_noembedding_model(development=is_dev, is_leonhard=is_linux)
     # train_kaggle_baseline_earthquake_model(development=is_dev, is_leonhard=is_linux)
     # train_kaggle_baseline_noembedding_earthquake_model(development=is_dev, is_leonhard=is_linux)
     # train_decisiontree_model(development=is_dev, is_leonhard=is_linux)
     # train_random_classifier_model(development=is_dev, is_leonhard=is_linux)
-    train_kaggle_baseline_model(market_df,is_dev)
+    train_kaggle_baseline_model(market_df=market_df, development=is_dev)
     # train_xgboost_model(development=is_dev, is_leonhard=is_linux)
     #train_kaggle_baseline_noembedding_model(development=is_dev, is_leonhard=is_linux)
