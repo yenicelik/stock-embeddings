@@ -13,7 +13,7 @@ import tensorflow as tf
 
 
 class BaselineModelTensorflow:
-    embedding_dimension = 10
+    embedding_dimension = 50
 
     @property
     def name(self):
