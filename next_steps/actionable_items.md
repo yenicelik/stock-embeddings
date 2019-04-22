@@ -5,7 +5,7 @@ Once we work on these items, we can probably hand it in for publication at a con
 
 - [ ] Stock embeddings require more details.
     - [ ] Mathematically, why would stock embeddings capture more information? (Thomas)
-    - [ ] What happens when you interpolate the stock embeddings in the stock embedding space? (Thomas)
+    - [ ] What happens when you interpolate the stock embeddings in the stock embedding space? [I'd suggest we skip this one] (Thomas)
     - [ ] Can you learn something about stock similarity from the embeddings? (Thomas)
 
 - [ ] Elaborate on how much "signal" there is in the raw numbers data. 
@@ -13,15 +13,12 @@ Specifically, referring to the comment: deep learning is successful whenever the
 Now I can see that the ability to predict stock prices is a tempting task, but do you know how much "signal" there is in financial data? 
 You could have elaborated also on applying deep learning to secondary data e.g. twitter, news articles etc, as opposed to raw stock prices. (Not sure who? And to what extent?)
 - [ ] Elaborate on long-term investing, swing-trading, day-trading, high-frequency trading. (Lukas, Thomas)
-- [ ] Include training details: i.e. loss curves  (David)
-- [ ] Compare to RNNs (David)
+- [ ] Compare to RNNs (David) [Will not do this]
 
 - [ ] e.g. f_0 in Table I is left undefined (I am guessing it is 0.0087) and unmotivated (Kostas, Thomas)
 - [ ] The reshuffling and r* stuff is not explained very well. (Thomas, Kostas, Miller) 
-- [ ] A verb is missing in the sentence "On the other hand by the reshuffling..." (Thomas, Kostas, Miller)
 
 - [ ] Selected features are not given 0_0???? what does this mean? --> Unclear what the TA meant by this I think. 
-- [ ] Do not apply earthquake selection on features, but on input (i.e. no feature-engineering)! (Thomas, David) Be more explicit that this is done on both input and on other features, and that the correlaiton measure can choose amongst those!
 
 - [ ] Visualize a time-series model for the benchmarks (i.e. tickers which say "up"/"down") (David, Lukas)
 - [ ] Check if there's survivorship bias in the data. (Kostas, Thomas)
@@ -47,3 +44,7 @@ You could have elaborated also on applying deep learning to secondary data e.g. 
 - [x] loss function is left undefined. (David)
 - [x] Specify how NaN values are removed (David, Thomas)
 - [x] Add reference in Section V.A (Lukas)
+
+- [x] A verb is missing in the sentence "On the other hand by the reshuffling..." (Thomas, Kostas, Miller)
+- [ ] Include training details: i.e. loss curves  (David) [Will not do this as loss curves are too narrow]
+- [x] Do not apply earthquake selection on features, but on input (i.e. no feature-engineering)! (Thomas, David) Be more explicit that this is done on both input and on other features, and that the correlaiton measure can choose amongst those! [I think is covered! ]
