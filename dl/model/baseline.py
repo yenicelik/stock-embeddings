@@ -63,7 +63,7 @@ class BaselineModel:
         if self.regression:
             self.keras_model.compile(optimizer='adam', loss='mean_squared_error')
         else:
-            self.keras_model.compile(optimizer='adam', loss=binary_crossentropy,metrics=['accuracy'])
+            self.keras_model.compile(optimizer='adam', loss=binary_crossentropy, metrics=['accuracy'])
 
     def save_model(self):
         """

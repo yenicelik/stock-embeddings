@@ -25,6 +25,7 @@ Reviewer 1
 - include training details, e.g. loss curves
 - should at least compare with RNNs
 + code looks good
++ code looks good
 
 
 Reviewer 2

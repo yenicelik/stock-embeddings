@@ -23,6 +23,19 @@ You could have elaborated also on applying deep learning to secondary data e.g. 
 - [ ] Visualize a time-series model for the benchmarks (i.e. tickers which say "up"/"down") (David, Lukas)
 - [ ] Check if there's survivorship bias in the data. (Kostas, Thomas)
 
+
+-----
+
+- [] Table 4 is weird (last row duplicate!)
+- [] Threshold where does this come from (feaure)
+- [] l1 regularized
+- [] reference style should be uniform (APA)
+- [] send prediction etc, to lucas
+
+
+
+
+
 ### Done
 
 - [x] Add a section: Literature research. It exists already here and there, but a more elaborate version would be nice (Lukas)
