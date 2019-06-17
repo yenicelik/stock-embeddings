@@ -1,6 +1,6 @@
 import argparse
 from sys import platform
-
+import numpy as np
 
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -63,6 +63,10 @@ def train_kaggle_baseline_model(market_df, development):
     print("Train: ", accuracy_score(predict_train > 0, y_train > 0))
     print("Validation: ", accuracy_score(predict_valid > 0, y_valid > 0))
     print("Test: ", accuracy_score(predict_test > 0, y_test > 0))
+
+    # Test Items
+    np.save("/cluster/home/yedavid/test_predicted.npy", predict_test)
+    np.save("/cluster/home/yedavid/test_real.npy", y_test)
 
 def train_kaggle_baseline_noembedding_model(development, is_leonhard):
 
@@ -131,9 +135,10 @@ def train_kaggle_baseline_earthquake_model(development, is_leonhard):
 
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     scaler = StandardScaler()
-    num_feature_cols = list(market_df.columns[response_col + 1:])
+    num_feature_cols = list(market_df.columns[response_col + 1:-1])
 
     print(market_df.head())
+
     # TODO: That this is not empty seems to stress me out a bit!!!
     # print(market_df[np.isnan(market_df)].head())
 
@@ -145,8 +150,15 @@ def train_kaggle_baseline_earthquake_model(development, is_leonhard):
     print("Done scalar fitting!")
     print("Dataframe now is: ", market_df)
 
-    model = BaselineModel(encoder_label, num_feature_cols=num_feature_cols, dev=development)
-    model.optimizer_definition()
+    # model = BaselineModel(encoder_label)
+    # model.optimizer_definition()
+    # model.keras_model.summary()
+
+    model = BaselineModel(
+        encoder_label,
+        number_of_numerical_inputs=len(num_feature_cols),
+        development=development
+    )
     model.keras_model.summary()
 
 
@@ -188,7 +200,8 @@ def train_kaggle_baseline_noembedding_earthquake_model(development, is_leonhard)
     market_df = preprocess(df)
 
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
-    numerical_feature_cols = list(market_df.columns[response_col + 1:])
+    scaler = StandardScaler()
+    num_feature_cols = list(market_df.columns[response_col + 1:-1])
 
     earthquake_model = Earthquake()
     market_df, _ = earthquake_model.transform(market_df)
@@ -196,10 +209,12 @@ def train_kaggle_baseline_noembedding_earthquake_model(development, is_leonhard)
     print("Done scalar fitting!")
     print("Dataframe now is: ", market_df)
 
-    model = BaselineModelNoEmbedding(encoder_label, num_feature_cols=numerical_feature_cols, dev=development)
-    model.optimizer_definition()
+    model = BaselineModel(
+        encoder_label,
+        number_of_numerical_inputs=len(num_feature_cols),
+        development=development
+    )
     model.keras_model.summary()
-
 
     def get_input(market_df, indices):
         X_num = market_df.loc[indices, num_feature_cols].values

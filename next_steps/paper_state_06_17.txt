@@ -1,0 +1,411 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{svg}
+\usepackage{hyperref}
+\usepackage{placeins}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Deep Learning for Stock Prediction using Stock Embeddings and Temporal Correlation Measures\\
+{}
+}
+\author{\IEEEauthorblockN{Thomas Greminger}
+\IEEEauthorblockA{\textit{ETH Zurich} \\
+grethoma@student.ethz.ch}
+\and
+\IEEEauthorblockN{David Yenicelik*}
+\IEEEauthorblockA{\textit{ETH Zurich} \\
+yedavid@ethz.ch}\thanks{*Corresponding author} \\
+\and
+\IEEEauthorblockN{Lukas Ryll}
+\IEEEauthorblockA{\textit{University of Cambridge}\\
+lr487@cam.ac.uk}
+\and
+\IEEEauthorblockN{Konstantinos Bardis}
+\IEEEauthorblockA{\textit{ETH Zurich}\\
+bardis@lav.mavt.ethz.ch}\\
+\and
+\IEEEauthorblockN{Miller Mendoza}
+\IEEEauthorblockA{\textit{ETH Zurich}\\
+mmendoza@ethz.ch}
+
+}
+\maketitle
+
+\begin{abstract}
+The prediction of financial time series is an increasingly difficult task in times of big data which requires the use of efficient prediction and automation methodologies.
+Traditional mathematical stochastic process models and simple machine learning models prevail in this community.
+This paper demonstrates the competitiveness of deep neural network models compared to traditional machine learning models in the area of stock price prediction. \\
+
+Our novel contributions are two-fold: 1. We introduce a novel neural architecture model through the use of stock-embeddings, which achieves state-of-the-art accuracy in the given task; 2. We experiment with a feature selection algorithm commonly used to predict earthquakes and solar flares through temporal correlation measurements that can be used as additional input to predict stock prices. \\
+
+These contributions pave the way for future research in the direction of combining deep learning models with temporal correlation measurements, as well as using embeddings in domains different than natural language processing.
+\end{abstract}
+
+\begin{IEEEkeywords}
+stock embeddings, temporal correlation measures, deep learning, machine learning
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Artificial neural networks are becoming increasingly common in the financial markets thanks to their ability to handle large amounts of data that show non-linear behaviour, include discontinuities, and high-frequency polynomial components. Different approaches have been presented in the past, including but not limited to the use of: multi-layer feed forward neural network trained with back-propagation \cite{martinez,dhar,lasfer}, support vector machines \cite{xie,bao} and hybrid methods \cite{patel,zhu}.
+
+Up until now the application of deep learning in financial markets is less established \cite{cavalcante}. Predicting complex, high-dimensional and noisy time series data remains a challenging task. Some previous works in this area that are worth mentioning include  \cite{yoshihara,ding,kuremoto}.
+
+The probability density of stock market returns often resembles a power-law distribution \cite{Gopikrishnan}. This property is also found in the distribution of magnitudes of earthquakes and solar flares \cite{lippiello, mendoza}. This similarity opens up the possibility that the statistical tools used to predict these physical phenomena can be applied to predict stock prices. In this study, we explore this methodology and use it in the context of neural networks.
+
+\section{Data}
+
+\begin{figure}[H]
+  \caption{A sample of the ABB Stock value in \$ at each timestep (day).}
+  \centering
+    \includegraphics[width=0.5\textwidth]{dl_ABB_Sample.png}
+\end{figure}
+
+The following dataset from Kaggle was used for the project: \textcolor{blue}{\url{https://www.kaggle.com/borismarjanovic/price-volume-data-for-all-us-stocks-etfs}}. It contains the historical daily price and volume data for 7195 US-based stocks between 1/1962 and 1/2017, including the open, high, low and close values. The data has been adjusted for dividends and splits.
+Applying an 80\%-10\%-10\% train-validation-test split, there are in total 12'023'501 samples in the training set, and 1'335'945 samples in the validation and test set respectively.
+A sample of the "open" prices can be seen in Fig. 1.
+
+The following data are extracted from the aforementioned variables: 1) return one day ahead, $r_{i+1} = \frac{o_{i+1} - o_{i}}{o_i}$; 2)  return of previous day, $ r_{i-1} = \frac{o_{i} - o_{i-1}}{o_{i-1}}$; 3) return of previous two days, $r_{i-2} = \frac{o_{i} - o_{i-2}}{o_{i-1}}$; 4) return of previous five days, $r_{i-5} = \frac{o_{i} - o_{i-5}}{o_{i-5}}$, where $r$ is the return and $o_{i}$ the opening value on the $i$-th day, accordingly, as can be seen in Fig. 3. These extracted variables are appended to the data table. Moreover, the stock symbols and dates are both encoded into integer values. Finally, all NaN values are removed from the data by dropping all rows which include NaNs.
+
+The first generated indicator is the projected return implied by the following day’s opening price. Its sign indicates whether the stock will go up or down, and this is our response variable. We construct a binary classification- instead of a regression problem, as existing literature suggests that the former performs better in predicting financial market data. \cite{enke}\cite{leung}. Concretely, we specify whether the market value of a stock at a given timestep (day) will increase or decrease.
+
+\begin{figure}[H]
+  \caption{A sample of the response variable for a given time period.
+  This response variable is the stock value change in \$ for the next day. Each individual timestep refers to one day.}
+  \centering
+    \includegraphics[width=0.5\textwidth]{dl_response_variable.png}
+\end{figure}
+
+\section{Feature Selection}
+
+Feature selection, the process of removing or regularizing irrelevant and/or redundant features, plays an important role in compressing the data dimension as well as improving learning accuracy, reducing learning time, and simplifying the learning results \cite{cai}. Various approaches exist and have been applied in many fields. Particularly with regard to stock market prediction, existing feature selection and feature engineering approaches included: 1) the calculation of technical attributes, such as moving averages, volatility, on balance volume, momentum, relative strength index \cite{vanstone}; 2) the application of filters and wrappers \cite{lee, lin}; as well as 3) hybrid methods \cite{tsai,lee2}.
+
+For instance, \cite{Dai et al.} test a feature selection method termed NLICA (Nonlinear Independent Components Analysis), which assumes that measured variables can be expressed as nonlinear combinations of an arbitrary number of latent source variables. In combination with a neural network, the method outperforms both LICA and PCA feature engineering models in forecasting the Nikkei 225 as well as the Shanghai B-Share stock index.
+
+\cite{Lendasse et al.} experiment with an approach which combines PCA and CCA with a Radial Basis Function Neural Network for time series prediction. Essentially, the paradigm used in their study encompasses the usage of a maximum number of features which are then compressed to limited state vectors and fed into the neural network.
+
+\cite{Kumar et al.} compare different preprocessing techniques applied to neural networks and proximal support vector machines. While a random forest model outperformed its peer group significantly, other methods used (including linear correlation, rank correlation, and regression relief) achieve similar performances for each of the 12 stock indices the systems are tested on.
+
+\cite{Lee} presents different feature selection methods applied to neural networks and support vector machines applied to predicting the NASDAQ index. These methods include correlation-based feature selection, information gain, symmetrical uncertainty, and a hybrid technique termed F-score and Supported Sequential Forward Search (F\_SSFS). F\_SSFS first filters features according to their F-Score ranks and consecutively runs a feature stacking algorithm which conducts systematic SVM trials for different feature combinations until a predefined number of features is reached or the error metric stops converging, reducing the training set based on support vector allocation at every step.
+
+\begin{figure}[H]
+  \caption{Change in stock price over a 5-day period (sampled time interval). Each individual timestep refers to one day.}
+  \centering
+    \includegraphics[width=0.5\textwidth]{dl_abb_5day.png}
+\end{figure}
+
+In this study, a novel method to assess the importance of individual features in predicting the target variable (as shown in Fig. 1) is assessed. It has previously been used in the field of earthquake and solar flare predictions \cite{lippiello},\cite{mendoza}.
+The method's strengths lie in its weak assumptions. It involves the computation of the probability that the return will be greater than a given threshold $r > r_0$ given that the $i$-feature exceeds a threshold $f_i > f_0 $. This conditional probability reads as follows: \begin{equation}
+P(r > r_0 \mid f_i > f_0 ) =\frac{N(r_0,f_0)}{N(f_0)}\label{eq}
+\end{equation}where $N(r_0,f_0)$ is the number of subsequent events with both $r > r_0$ and $f_i > f_0 $ while $N(f_0)$ is the number of couples with $f_i > f_0 $. The time series of the target variable is reshuffled  and the conditional probability $P(r^{\star} > r_0 \mid f_i > f_0 )$ computed where $r^{\star}$ refers to an individual realization of the reshuffled time series. When $P(r > r_0 \mid f_i > f_0 ) $  lies sufficiently outside of the confidence interval of $P(r^{\star} > r_0 \mid f_i > f_0 )$ distribution, a significant statistical relevance of the $f_i$ feature is inferred.
+
+In our case $r_0$ is 0 and $P(r_0 > 0 \mid f_i > f_0 )$ refers to the a posteriori probability of our response variable (stock return from today to the next day) is positive, given our feature takes a certain value ($f_i > f_0$). On the other hand, by reshuffling we estimate the zero-line $P(r^{\star} > r_0 \mid f_i > f_0 )$ and its standard deviation. If the former value ($P(r_0 > 0 \mid f_i > f_0 )$) deviates enough from the estimation ($P(r^{\star} > r_0 \mid f_i > f_0 )$) we consider the feature $f_i$ to be relevant for our prediction task. The example in the table below shows the calculations for ABB data from February 2005 to November 2017. Our response variable remains the return from today to the next day, and we test the previous day's return as a potential feature.
+\begin{table}[H]
+\caption{Example Relevance Calculation of Feature}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{} & \textbf{Number} \\
+\hline Number of Days & 3192 \\\hline
+$f<-0.0087$ & 799  \\\hline
+$f<-0.0087$ and $r_0 > 0$ & 429  \\\hline
+$P(r_0 > 0 \mid f_i > f_0 )$ & 0.53692 \\\hline
+Estimation of $P(r^{\star} > r_0 \mid f_i > f_0 )$ &0.5194\\\hline
+Estimation of Standard-deviation &0.015\\\hline
+\end{tabular}
+\label{tab2}
+\end{center}
+\end{table}
+In the example above the difference between $P(r_0 > 0 \mid f_i > f_0 )$ and $P(r_0 > 0 \mid f_i > f_0 )$ is 1.14 standard-deviations. Seen individually, this is a weak indication for the relevance of the feature.
+
+\section{Stock Embeddings}
+
+Intuitively, the stock embeddings should allow the neural network to disentangle relations between different stocks.
+Other papers \cite{OTHER} mostly focus on applying price-predictions for a general dataset of ticker items.
+There is little existing literature in the field of time series analysis for stock price prediction based on individual cohorts.
+We aim to use the stock embeddings for a multitude of reasons:
+
+\begin{enumerate}
+    \item Allow the neural to exploit learned information between stocks w.r.t. similarities and differences.
+    \item Find cross-correlation between stocks. Stocks commonly exhibit the phenomenon that one stock's movement serves as an indication that another stock will move in an associated direction.
+\end{enumerate}
+
+In the neural network architecture, we use both the individual time-series as well as the stock symbol embedding matrix as inputs.
+We choose the dimensions of the embedding matrix to be $(\text{"number of individual stocks"}, \text{"embedding dimensions"})$. We use 10-dimensional embeddings for all experiments as this dimensionality yields good results for the baseline neural network.
+We discuss further results in Section IV.
+
+
+\section{Model}
+
+\subsection{Baseline}
+
+The baseline model was taken from \cite{KaggleBaselineModel} and appropriately adapted for the present application.
+It is a fully connected neural network that includes an embedding layer \cite{word2vec}. The activation units are \textit{relu's} after each connected layer while a \textit{logistic sigmoid} function is applied in the output layer.
+
+
+\subsection{Proposed}
+Our proposed neural network follows the aforementioned simple baseline network.
+The following table describes the architecture of the network we use.
+We use a sequential model, and will also elaborate on how the embeddings are used.
+We use Keras  \cite{chollet2015keras}  to implement the model. As such, our terminology will consist of Keras modules to describe the layers we use.
+
+The model has two inputs, one numerical input (numerical features such as 1-day-difference, 2-day-difference etc.), and a label input (i.e., stock symbols that are used as part of the embedding). These are split into two different streams.
+Stream 1 and it's underlying sequential sub-model for the numerical items, as well as stream 2 and it's underlying sub-model for the embedded items.
+We pair stream 1 and stream 2 by associating each time series with the respective stock symbol. In this case, the stock symbol is passed through the embedding, resulting in a 10-dimensional embedding vector which is concatenated to the output of the time series stream.
+
+
+\begin{table}[htbp]
+\caption{Models overview}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Layer No. & Type & Latent Dimensions \\
+\hline
+1.1 & Input (Numerical) & - \\\hline
+1.2 & Batch Normalization & - \\\hline
+1.3 & Fully Connected & 128 \\\hline
+1.4 & Fully Connected & 64 \\\hline
+
+2.1 & Input (Stock Label for Embedding) & - \\\hline
+2.2 & Embedding & 10 \\\hline
+2.3 & Fully Connected & 32 \\\hline
+
+3 & Concatenate (Output of 1.4 and 2.3) & - \\\hline
+4 & Fully Connected & 64 \\\hline
+5 & Fully Connected & 1 \\\hline
+
+\multicolumn{3}{l}{}
+\end{tabular}
+\label{tab1}
+\end{center}
+\end{table}
+
+We use \textit{relu} activation units after each fully connected layer, except for the output layer for which a \textit{sigmoid} function was used.
+The last layer predicts the probability that the stock will exhibit a positive return on the following day.
+
+
+\section{Results \& Discussion}
+
+\subsection{Futures}
+Section III presents the results from the application of the proposed feature selection algorithm for a given stock. In the example there we find the probability that the return of the stock for the next day given the return of the previous day assumes a certain value is significant.
+
+The application of this method does not have to be limited to the same stock but can be also be generalized to multiple stocks. It can also be applied to a wide range of other features such as interest rates changes or commodity price changes. The method is useful in financial markets because of its weak assumptions. In particular, no distribution assumptions are made and no linearity assumptions are made. Any such assumptions have proved false in financial markets anyway.
+A good feature selection algorithm takes a burden of any downstream prediction algorithm.
+
+\subsection{Stock Embeddings}
+Given visual analysis, the stock embeddings seem to have learned correlations among different stocks.
+
+\begin{figure*}
+  \caption{t-SNE visualization of the embeddings. The visualized embeddings are 50 dimensional vector representations of each stock.}
+  \centering
+    \includegraphics[width=1\textwidth]{Embedding_Symbols.png}
+\end{figure*}
+
+One can clearly identify different clusters in Figure 4.
+Additionally, we can demonstrate how different stocks are associated with each other by randomly picking stock symbols from within the embeddings.
+
+\begin{figure}[H]
+  \caption{One example for the neighborhood of the embeddings, when BlackRock is chosen as the asset under comparison}
+  \centering
+    \includegraphics[width=0.5\textwidth]{Blackrock.png}
+\end{figure}
+
+One can also clearly identify clustering tendencies for securities with similar price performance trajectories. For instance, two stocks starting high and falling low during the testing period will more likely be grouped together in the latent space created by the embeddings (see Fig. 6 in App. A).
+Because the stock embeddings present both these stocks to be in high proximity, this is then an indication for the embedding to have learned a correlation between stocks that are decreasing in value.
+
+\subsection{Training}
+
+All models were trained, validated, and tested on the exact same sample set, which provides a solid ground for comparison between models.
+Given the nature of the binary classification task, we used the binary cross-entropy loss-measure for training and comparison across models.
+We decided to not use the validation loss, but to use accuracy measures (given in \%) as a comparative metric as this gives more intuition and is directly related to the binary cross-entropy of the model.
+
+
+%\begin{figure}[h]
+%\includegraphics[width=8cm]{nn.svg}
+%\end{figure}
+\begin{table}[H]
+\caption{Reference models (non-neural network models) overview}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Model} & Train Accuracy & Test Accuracy \\
+\hline
+Random        & 50.16 & 50.19 \\\hline
+Decision Tree & 53.76 & 53.46  \\\hline
+XGBoost      & 53.93 & 53.56 \\\hline
+\multicolumn{3}{l}{}
+\end{tabular}
+\label{tab1}
+\end{center}
+\end{table}
+
+As hyperparameters, we set "min samples leaf = 5000" for the decision tree, and kept the default hyperparameters for all the other models.
+As one can see, the xgboost (which employs a linear gradient algorithm) has the highest performance.
+
+
+%\begin{figure}[h]
+%\includegraphics[width=8cm]{nn.svg}
+%\end{figure}
+\begin{table}[H]
+\caption{Accuracy of different neural network architectures with different configurations.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Significance} & \textbf{Embedding} & Epochs & Train & Test \\
+& & & Accuracy & Accuracy\\
+\hline
+No & Yes & 3 & 53.55 & 53.48 \\\hline
+No & No & 20 &  53.44 & 53.48 \\\hline
+No & Yes & 20 & 54.22 & \textbf{54.03} \\\hline
+Yes & No & 20 & 53.38 & 53.41 \\\hline
+Yes & Yes & 20 & 54.09 & 53.93 \\\hline
+\multicolumn{3}{l}{}
+\end{tabular}
+\label{tab1}
+\end{center}
+\end{table}
+
+It can be clearly seen that the neural network model with the stock embeddings performs best, while the significance measures do not improve the model. The improvement due to the embeddings are significant (compared to non-embeddings), as this is multiple hundreds of percentage points away from the XGBoost model, as well as the non-embeddings model (on a test set with 1 million samples). This implies that the learned results are significant, and not due to random fluctuations.
+
+Finally, we observe results when altering the embedding dimensions.
+We pick the values 10, 50 and 300 because these are respectively common values when data is limited (10 and 50 dimensions), or for similar tasks in the domain of natural language processing \cite{GLOVE}.
+
+%\begin{figure}[h]
+%\includegraphics[width=8cm]{nn.svg}
+%\end{figure}
+\begin{table}[H]
+\caption{Model accuracy relative to the embedding dimensions}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Embedding dimension} & Train Accuracy & Test Accuracy \\
+\hline
+10 & 54.22 & 54.03 \\\hline
+50 & 54.44 & 54.48  \\\hline
+300 & 53.55 & \textbf{54.77} \\\hline
+\multicolumn{3}{l}{}
+\end{tabular}
+\label{tab1}
+\end{center}
+\end{table}
+
+The dependence between the embedding dimensions and the accuracy confirms once more that there is a significant information leverage from increasing dimensionality until some exhaustive dimension after which the additional benefits are minor.
+
+\section{Summary}
+
+Deep learning architectures are increasingly gaining relevance in the fields of sequence prediction and computer vision tasks.
+However, the use of deep learning models within the stock market is rather scarce compared to traditional machine learning algorithms and traditional stochastic prediction models.
+In this paper we demonstrated that deep neural network models represent highly competitive algorithms for stock price prediction.
+Firstly, we compared traditional machine learning algorithms with a neural network baseline, showing that the neural network is indeed capable of achieving similar accuracy levels.
+Second, we introduced a novel neural architecture model through the use of stock embeddings (similar to word embeddings), which achieves state-of-the-art accuracy in the task of stock price prediction.
+
+Lastly, we also showed that a feature selection algorithm commonly used to predict earthquakes and solar flares through temporal correlation measurements can be used as a feature selection method in stock market prediction. To the best of our knowledge, the use of this algorithm in this specific domain has not been investigated before.
+These contributions pave the way for future research in the direction of combining deep learning models with temporal correlation measures, as well as using embeddings in domains different than natural language processing.
+
+\begin{thebibliography}{00}
+\bibitem{chollet2015keras}{Chollet, F. & et al., "Keras", \textcolor{blue}{\url{https://keras.io}} (2015),
+}
+
+\bibitem{tsai}{Tsai, C. & Yu-Chieh H. (2010) "Combining multiple feature selection methods for stock prediction: Union, intersection, and multi-intersection approaches." Decision Support Systems 50.1: 258-269.}
+
+\bibitem{lee2}{Lee, Ming-Chi. (2009) "Using support vector machine with a hybrid feature selection method to the stock trend prediction." Expert Systems with Applications 36.8 : 10896-10904.}
+
+\bibitem{cai}{Cai, J., et al. (2018) "Feature selection in machine learning: A new perspective." Neurocomputing 300 : 70-79.}
+
+\bibitem{lee}{Lee, Ming-Chi. (2009) "Using support vector machine with a hybrid feature selection method to the stock trend prediction." Expert Systems with Applications 36.8 : 10896-10904.}
+\bibitem{vanstone}{Vanstone B., & Gavin F (2009). "An empirical methodology for developing stockmarket trading systems using artificial neural networks." Expert systems with applications 36.3 : 6668-6680.}
+
+\bibitem{Dai et al.} Dai, W., Wu, J. Y., & Lu, C. J. (2012). Combining nonlinear independent component analysis and neural network for the prediction of Asian stock market indexes. Expert systems with applications, 39(4), 4444-4452.
+
+\bibitem{Kumar et al.} Kumar, D., Meghwani, S. S., & Thakur, M. (2016). Proximal support vector machine based hybrid prediction models for trend forecasting in financial markets. Journal of Computational Science, 17, 1-13.
+
+\bibitem{Lee} Lee, M. C. (2009). Using support vector machine with a hybrid feature selection method to the stock trend prediction. Expert Systems with Applications, 36(8), 10896-10904.
+
+\bibitem{Lendasse et al.} Lendasse, A., de Bodt, E., Wertz, V., & Verleysen, M. (2000). Non-linear financial time series forecasting-Application to the Bel 20 stock market index. European Journal of Economic and Social Systems, 14(1), 81-91.
+
+\bibitem{lin}{Lin, Fengyi, et al. (2014) "Novel feature selection methods to financial distress prediction." Expert Systems with Applications 41.5: 2472-2483.}
+
+\bibitem{KaggleBaselineModel}{Anonymous (2018), Market Data NN Baseline,  https://www.kaggle.com/christofhenkel/market-data-nn-baseline, last viewed 14. April 2019}
+
+\bibitem{kuremoto}{Kuremoto, Takashi, et al. (2014) "Time series forecasting using a deep belief network with restricted Boltzmann machines." Neurocomputing 137 : 47-56.}
+
+\bibitem{yoshihara}{Yoshihara, Akira, et al. (2014) "Predicting stock market trends by recurrent deep neural networks." Pacific rim international conference on artificial intelligence. Springer, Cham.}
+\bibitem{ding}{Ding, Xiao, et al. "Deep learning for event-driven stock prediction." Ijcai. 2015.}
+
+\bibitem{OTHER}{Xiao Ding, Yue Zhang, Ting Liu, Junwen Duan (2015), Deep Learning for Event-Driven Stock Prediction}
+
+\bibitem{cavalcante}{Cavalcante, Rodolfo C., et al. (2016) "Computational intelligence and financial markets: A survey and future directions." Expert Systems with Applications 55 : 194-211.}
+
+\bibitem{lasfer}{Lasfer, Assia, El-Baz H., & Zualkernan I. (2013) "Neural Network design parameters for forecasting financial time series." Modeling, Simulation and Applied Optimization (ICMSAO), 2013 5th International Conference on. IEEE.}
+
+\bibitem{dhar}{Dhar, Satyajit, Tuhin Mukherjee, and Arnab Kumar Ghoshal. (2010) "Performance evaluation of Neural Network approach in financial prediction: Evidence from Indian Market." Communication and Computational Intelligence (INCOCCI), 2010 International Conference on. IEEE.}
+
+\bibitem{bao}{Bao, Yukun, et al. (2011) "A comparative study of multi-step-ahead prediction for crude oil price with support vector regression." Computational Sciences and Optimization (CSO), 2011 Fourth International Joint Conference on. IEEE.}
+
+\bibitem{xie}{Xie, Guo-qiang. (2011) "The optimization of share price prediction model based on support vector machine." Control, Automation and Systems Engineering (CASE), 2011 International Conference on. IEEE.}
+
+\bibitem{zhu}{Zhu, Bangzhu, and Yiming Wei (2013). "Carbon price forecasting with a novel hybrid ARIMA and least squares support vector machines methodology." Omega 41.3 : 517-524.}
+
+\bibitem{patel}{Patel, Jigar, et al. (2015) "Predicting stock market index using fusion of machine learning techniques." Expert Systems with Applications 42.4: 2162-2172.}
+
+\bibitem{martinez}{Martinez, Leonardo C., et al. (2009) "From an artificial neural network to a stock market day-trading system: A case study on the bm&f bovespa." Neural Networks, 2009. IJCNN 2009. International Joint Conference on. IEEE, 2009.}
+
+\bibitem{enke}Enke, D. and Thawornwong, S. (2005). The use of data mining and neural networks for forecasting
+stock market returns. Expert Systems with Applications, 29(4):927–940.
+
+\bibitem{leung}Leung, M. T., Daouk, H., and Chen, A.-S. (2000). Forecasting stock indices: A comparison of classification and level estimation models. International Journal of Forecasting, 16(2):173–190.
+
+\bibitem{lippiello}Lippiello E., de Arcangelis L. & Godano C. (2008) Influence of Time and Space Correlations on Earthquake Magnitude.
+PHYSICAL REVIEW LETTERS, published 22 January 2008
+
+\bibitem{mendoza}Mendoza M., Kaydul A., de Arcangelis L., Andrade Jr J.S. and Herrmann H.J. (2014), Modelling the influence of photospheric turbulence on solar flare statistics, Nature Communications, Published 23 Sep 2014
+
+\bibitem{GLOVE}{Pennington J., Socher R., and Manning C.D. (2014). GloVe: Global Vectors for Word Representation}
+
+\bibitem{Gopikrishnan} Gopikrishnan, Parameswaran, et al. (1999) Scaling of the distribution of fluctuations of financial market indices. Physical Review E 60.5 (1999): 5305.
+
+\bibitem{word2vec} Mikolov T., et al. (2013) Distributed Representations of Words and Phrases and their Compositionality. NIPS Proceedings 2013.
+
+\end{thebibliography}
+\clearpage
+\section{Appendum A}
+
+One can observe from the following graphs that the embeddings were able to capture stock items that would show a positive (DSGX, PRK) and negative (IDN, EMMS) trend respectively.
+
+\begin{figure}[htpb]
+  \caption{Stocks "IDN" and "DXB": Stock price in USD between 2000 and 2019. There is a general negative trend w.r.t. time.}
+  \centering
+    \includegraphics[width=0.5\textwidth]{IDN_1.png}
+    \includegraphics[width=0.5\textwidth]{EMMS_1.png}
+\end{figure}
+
+\makeatletter
+\setlength{\@fptop}{63pt}
+\makeatother
+\begin{figure}[htpb]
+  \caption{Stocks "DSGX" and "PRK": Stock price in USD between 2000 and 2019. There is a general positive trend w.r.t. time.}
+  \centering
+    \includegraphics[width=0.5\textwidth]{DSGX_2.png}
+    \includegraphics[width=0.5\textwidth]{PRK_2.png}
+\end{figure}
+\clearpage
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+\begin{figure}[!htpb]
+  \caption{t-SNE visualization of the embeddings. The visualized embeddings are 50 dimensional vector representations of each stock.}
+  \centering
+    \includegraphics[width=1.0\textwidth]{Embedding_Dots.png}
+\end{figure}
+
+\end{document}

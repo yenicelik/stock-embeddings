@@ -5,6 +5,8 @@
 import os
 import pickle
 
+from keras.regularizers import l1
+
 from dl.data_loader import import_data
 from dl.data_loader import preprocess
 from keras.models import Model
@@ -26,7 +28,7 @@ def get_input(market_df, indices):
 
 
 class BaselineModel:
-    embedding_dimension = 10
+    embedding_dimension = 50
 
     @property
     def name(self):
@@ -110,7 +112,7 @@ class BaselineModel:
         early_stop = EarlyStopping(patience=5, verbose=True)
         self.keras_model.fit(X, y,
                              validation_data=(X_val, y_val),
-                             epochs=6,
+                             epochs=20,
                              verbose=1,
                              callbacks=[early_stop, check_point])
 

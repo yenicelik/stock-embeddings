@@ -23,18 +23,13 @@ You could have elaborated also on applying deep learning to secondary data e.g. 
 - [ ] Visualize a time-series model for the benchmarks (i.e. tickers which say "up"/"down") (David, Lukas)
 - [ ] Check if there's survivorship bias in the data. (Kostas, Thomas)
 
-
 -----
 
-- [] Table 4 is weird (last row duplicate!)
-- [] Threshold where does this come from (feaure)
-- [] l1 regularized
-- [] reference style should be uniform (APA)
-- [] send prediction etc, to lucas
+- [] Threshold where does this come from (feature) (Thomas - send in whatsapp)
 
-
-
-
+- [x] l1 regularized
+- [x] reference style should be uniform (APA)
+- [x] send prediction etc, to lucas
 
 ### Done
 
@@ -61,3 +56,5 @@ You could have elaborated also on applying deep learning to secondary data e.g. 
 - [x] A verb is missing in the sentence "On the other hand by the reshuffling..." (Thomas, Kostas, Miller)
 - [ ] Include training details: i.e. loss curves  (David) [Will not do this as loss curves are too narrow]
 - [x] Do not apply earthquake selection on features, but on input (i.e. no feature-engineering)! (Thomas, David) Be more explicit that this is done on both input and on other features, and that the correlaiton measure can choose amongst those! [I think is covered! ]
+
+- [x] Table 4 is weird (last row duplicate!) (David)
