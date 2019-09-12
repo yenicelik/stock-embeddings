@@ -291,13 +291,14 @@ if __name__ == "__main__":
 
     df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=is_dev)
     market_df = preprocess(df)
+
     # load model if not linux
     # train_kaggle_baseline_model(development=is_dev, is_leonhard=is_linux)
     # train_xgboost_model(development=is_dev, is_leonhard=is_linux)
     # train_kaggle_baseline_noembedding_model(development=is_dev, is_leonhard=is_linux)
-    # train_kaggle_baseline_noembedding_earthquake_model(development=is_dev, is_leonhard=is_linux)
     # train_decisiontree_model(development=is_dev, is_leonhard=is_linux)
     # train_random_classifier_model(development=is_dev, is_leonhard=is_linux)
     train_kaggle_baseline_model(market_df=market_df, development=is_dev)
     # train_xgboost_model(development=is_dev, is_leonhard=is_linux)
     #train_kaggle_baseline_noembedding_model(development=is_dev, is_leonhard=is_linux)
+

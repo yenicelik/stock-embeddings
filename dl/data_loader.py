@@ -31,11 +31,6 @@ def _get_single_dataframe(filename):
     df['ReturnOpenPrevious2'] = (df.Open - df.Open.shift(2)) / df.Open.shift(2)
     df['ReturnOpenPrevious5'] = (df.Open - df.Open.shift(5)) / df.Open.shift(5)
 
-    # df['ReturnOpenNext1'] = df['ReturnOpenNext1'].astype(np.float64)
-    # df['ReturnOpenPrevious1'] = df['ReturnOpenPrevious1'].astype(np.float64)
-    # df['ReturnOpenPrevious2'] = df['ReturnOpenPrevious2'].astype(np.float64)
-    # df['ReturnOpenPrevious5'] = df['ReturnOpenPrevious5'].astype(np.float64)
-
     # print("Until here takes: ", time.time() - start_time)
     # Change dtype to float32 for faster memory access
     df['Close'] = df['Close'].astype(np.float32)
