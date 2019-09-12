@@ -8,7 +8,7 @@ import pickle
 from keras.models import Model
 from keras.layers import Input, Dense, BatchNormalization
 from keras.losses import binary_crossentropy
-
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 class BaselineModelNoEmbedding:
     embedding_dimension = 10
@@ -87,14 +87,17 @@ class BaselineModelNoEmbedding:
         #     print("Loaded model instead of fitting!")
         #     return True
 
-        from keras.callbacks import EarlyStopping, ModelCheckpoint
-
         check_point = ModelCheckpoint('model.hdf5', verbose=True, save_best_only=True)
         early_stop = EarlyStopping(patience=5, verbose=True)
-        self.keras_model.fit(X, y,
-                             validation_data=(X_val, y_val),
+        print(y.shape)
+        print(X['num_input'].shape)
+        print(X['label_input'].shape)
+
+        self.keras_model.fit(X=X, Y=y,
+                             # validation_data=(X_val, y_val),
                              epochs=20,
                              verbose=1,
-                             callbacks=[early_stop, check_point])
+                             # callbacks=[early_stop, check_point]
+        )
 
         # self.save_model()

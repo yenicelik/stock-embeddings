@@ -20,7 +20,7 @@ class Trainer:
 
     def __init__(self):
         # Choose one of:
-        self.embedding = True
+        self.embedding = False
         print("Starting script!")
         parser = argparse.ArgumentParser(description='Process some integers.')
         parser.add_argument('--production', action='store_true', default=False, help='production')
@@ -78,18 +78,34 @@ class Trainer:
             random_state=23
         )
 
-        X_train, y_train = get_input(self.market_df, market_train_indices, self.num_feature_cols)
-        X_valid, y_valid = get_input(self.market_df, market_val_indices, self.num_feature_cols)
-        X_test, y_test = get_input(self.market_df, market_test_indices, self.num_feature_cols)
+        X_train, y_train = get_input(
+            self.market_df,
+            market_train_indices,
+            self.num_feature_cols,
+            extended=True
+        )
+        X_valid, y_valid = get_input(
+            self.market_df,
+            market_val_indices,
+            self.num_feature_cols,
+            extended=True
+        )
+        X_test, y_test = get_input(
+            self.market_df,
+            market_test_indices,
+            self.num_feature_cols,
+            extended=True
+        )
 
+        input("Press a button to continue..")
         print("Fitting model!")
         self.current_model.fit(X_train, y_train.astype(int), X_val=X_valid, y_val=y_valid)
 
+        input("Press a button to continue.. (2)")
         predict_train = self.current_model.predict(X_train) * 2 - 1
         predict_valid = self.current_model.predict(X_valid) * 2 - 1
         predict_test = self.current_model.predict(X_test) * 2 - 1
 
-        print("Xgboost!")
         _print_accuracy_scores(
             name="embedding" if self.embedding else "no_embedding",
             predict_train=predict_train,
@@ -99,16 +115,17 @@ class Trainer:
             predict_test=predict_test,
             y_test=y_test
         )
+        input("Done!")
 
         self.current_model.save_model()
-        if self.embedding:
-            # Test Items
-            np.save("/cluster/home/yedavid/embedding_test_predicted.npy", predict_test)
-            np.save("/cluster/home/yedavid/embedding_test_real.npy", y_test)
-        else:
-            # Test Items
-            np.save("/cluster/home/yedavid/no_embedding_test_predicted.npy", predict_test)
-            np.save("/cluster/home/yedavid/no_embedding_test_real.npy", y_test)
+        # if self.embedding:
+        #     # Test Items
+        #     np.save("/cluster/home/yedavid/embedding_test_predicted.npy", predict_test)
+        #     np.save("/cluster/home/yedavid/embedding_test_real.npy", y_test)
+        # else:
+        #     # Test Items
+        #     np.save("/cluster/home/yedavid/no_embedding_test_predicted.npy", predict_test)
+        #     np.save("/cluster/home/yedavid/no_embedding_test_real.npy", y_test)
 
 
 if __name__ == "__main__":

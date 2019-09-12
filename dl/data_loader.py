@@ -77,7 +77,7 @@ class DataLoader:
         filenames = sorted(filenames)  # sort so we can resume reading in individual files
 
         if development:
-            filenames = filenames[:101]
+            filenames = filenames[:20]
 
         print("Total number of file: ", len(filenames))
 

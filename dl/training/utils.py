@@ -48,9 +48,12 @@ def _provide_data(development, is_leonhard):
     return market_df, num_feature_cols
 
 
-def get_input(market_df, indices, num_feature_cols):
-    X = market_df.loc[indices, num_feature_cols].values
-    # X = {'num_input': X_num}
-    # X['label_input'] = market_df.loc[indices, 'Label'].values
+def get_input(market_df, indices, num_feature_cols, extended=False):
+    if extended:
+        X_num = market_df.loc[indices, num_feature_cols].values
+        X = {'num_input': X_num}
+        X['label_input'] = market_df.loc[indices, 'Label'].values
+    else:
+        X = market_df.loc[indices, num_feature_cols].values
     y = (market_df.loc[indices, 'ReturnOpenNext1'] >= 0).values
     return X, y
