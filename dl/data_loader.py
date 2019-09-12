@@ -12,9 +12,12 @@ pd.set_option('display.max_columns', 500)
 np.set_printoptions(threshold=np.nan)
 load_dotenv()
 
+
 def _get_single_dataframe(filename):
     """
         Reads in a single dataframe, and applies some common operations
+
+        This function must be defined outside the class, otherwise, no multiprocessing can be applied!
     :param filename:
     :return:
     """
@@ -43,173 +46,158 @@ def _get_single_dataframe(filename):
     return df
 
 
-def preprocess_individual_csvs_to_one_big_csv(development=False, direct_return=False):
+class DataLoader:
+    """
+        Defines all the information to
     """
 
-    Create a .env file, and input the path to your source data.
-    DATAPATH="/Users/david/deeplearning/"
+    def preprocess_individual_csvs_to_one_big_csv(self, development=False, direct_return=False):
+        """
 
-    The dataset can be downloaded from
-    https://www.kaggle.com/borismarjanovic/price-volume-data-for-all-us-stocks-etfs/version/3
+        Create a .env file, and input the path to your source data.
+        DATAPATH="/Users/david/deeplearning/"
 
-    # UPDATE: returns a pandas dataframe
+        The dataset can be downloaded from
+        https://www.kaggle.com/borismarjanovic/price-volume-data-for-all-us-stocks-etfs/version/3
 
-    :param directory: A directory (string)
-    :param development: A boolean
-    :return: A numpy array of size (stocks, dates, features).
-    """
-    import pandas as pd
+        # UPDATE: returns a pandas dataframe
 
-    datapath = os.getenv("DATAPATH_DIR")
+        :param directory: A directory (string)
+        :param development: A boolean
+        :return: A numpy array of size (stocks, dates, features).
+        """
+        import pandas as pd
 
-    # Read takes 1 minute for 1000 files
-    filenames = [x for x in os.listdir(datapath) if (x[-4:] == '.txt') and os.path.getsize(datapath + x) > 0]
-    filenames = [datapath + x for x in filenames]
-    filenames = list(set(filenames))  # remove any duplicates
-    filenames = sorted(filenames)  # sort so we can resume reading in individual files
+        datapath = os.getenv("DATAPATH_DIR")
 
-    if development:
-        filenames = filenames[:101]
+        # Read takes 1 minute for 1000 files
+        filenames = [x for x in os.listdir(datapath) if (x[-4:] == '.txt') and os.path.getsize(datapath + x) > 0]
+        filenames = [datapath + x for x in filenames]
+        filenames = list(set(filenames))  # remove any duplicates
+        filenames = sorted(filenames)  # sort so we can resume reading in individual files
 
-    print("Total number of file: ", len(filenames))
+        if development:
+            filenames = filenames[:101]
 
-    pool = multiprocessing.Pool()
-    print("Starting map...")
-    start_time = time.time()
-    all_dfs = pool.map(_get_single_dataframe, filenames)
-    all_dfs = list(all_dfs)
-    print("Took so many seconds", time.time() - start_time)
+        print("Total number of file: ", len(filenames))
 
-    print("All dfs are: ", len(all_dfs))
-    df = pd.concat(all_dfs, ignore_index=True)
+        pool = multiprocessing.Pool()
+        print("Starting map...")
+        start_time = time.time()
+        all_dfs = pool.map(_get_single_dataframe, filenames)
+        all_dfs = list(all_dfs)
+        print("Took so many seconds", time.time() - start_time)
 
-    # Encoding
-    stock_symbols = np.sort(df['Label'].unique().astype(str))
-    encoder_label = {l: idx for idx, l in enumerate(stock_symbols)}
-    decoder_label = dict(map(reversed, encoder_label.items()))
-    df['Label'] = [encoder_label.get(i) for i in df['Label']]
+        print("All dfs are: ", len(all_dfs))
+        df = pd.concat(all_dfs, ignore_index=True)
 
-    dates = np.sort((df['Date'].unique()))
-    encoder_date = {l: idx for idx, l in enumerate(dates)}
-    decoder_date = dict(map(reversed, encoder_date.items()))
-    df['Date'] = [encoder_date.get(i) for i in df['Date'].values]
+        # Encoding
+        stock_symbols = np.sort(df['Label'].unique().astype(str))
+        encoder_label = {l: idx for idx, l in enumerate(stock_symbols)}
+        decoder_label = dict(map(reversed, encoder_label.items()))
+        df['Label'] = [encoder_label.get(i) for i in df['Label']]
 
-    # We return the objects immediately, as pickling this file is too big! (if not development!)
-    if direct_return:
-        return df, encoder_date, encoder_label, decoder_date, decoder_label
+        dates = np.sort((df['Date'].unique()))
+        encoder_date = {l: idx for idx, l in enumerate(dates)}
+        decoder_date = dict(map(reversed, encoder_date.items()))
+        df['Date'] = [encoder_date.get(i) for i in df['Date'].values]
 
-    if development:
-        with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
+        # We return the objects immediately, as pickling this file is too big! (if not development!)
+        if direct_return:
+            return df, encoder_date, encoder_label, decoder_date, decoder_label
+
+        if development:
+            with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
+                pickle.dump({
+                    "encoder_label": encoder_label,
+                    "decoder_label": decoder_label,
+                    "encoder_date": encoder_date,
+                    "decoder_date": decoder_date,
+                    "df": df
+                }, f, protocol=4)
+        else:
+            with open(os.getenv("DATA_PICKLE"), "wb") as f:
+                pickle.dump({
+                    "encoder_label": encoder_label,
+                    "decoder_label": decoder_label,
+                    "encoder_date": encoder_date,
+                    "decoder_date": decoder_date,
+                    "df": df
+                }, f, protocol=4)
+
+        if direct_return:
+            return df, encoder_date, encoder_label, decoder_date, decoder_label
+        pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
+        pkl_file = pkl_dir + "all_dev.pkl" if development else pkl_dir + "all.pkl"
+
+        with open(pkl_file, "wb") as f:
             pickle.dump({
                 "encoder_label": encoder_label,
                 "decoder_label": decoder_label,
                 "encoder_date": encoder_date,
                 "decoder_date": decoder_date,
-                "df": df
-            }, f, protocol=4)
-    else:
-        with open(os.getenv("DATA_PICKLE"), "wb") as f:
-            pickle.dump({
-                "encoder_label": encoder_label,
-                "decoder_label": decoder_label,
-                "encoder_date": encoder_date,
-                "decoder_date": decoder_date,
-                "df": df
-            }, f, protocol=4)
+                "df": df}, f, protocol=4)
+        return df
 
-    if  direct_return:
-        return df, encoder_date, encoder_label,decoder_date,decoder_label
-    pkl_dir=os.getenv("DATAPATH_PROCESSED_DIR")
-    pkl_file=pkl_dir + "all_dev.pkl" if development else pkl_dir + "all.pkl"
+    def import_data(self, development=False):
+        """
 
-    with open(pkl_file, "wb") as f:
-        pickle.dump({
-            "encoder_label": encoder_label,
-            "decoder_label": decoder_label,
-            "encoder_date": encoder_date,
-            "decoder_date": decoder_date,
-            "df": df}, f, protocol=4)
-    return df
+        :param development:
+        :return df,encoder_date,encoder_label if dataframe_format is True else np.matrix,encoder_date,encoder_label:
+        """
 
+        # Check if loading is possible
 
-def import_data(development=False):
-    """
+        pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
+        pkl_file = pkl_dir + "pickle_dev.pkl" if development else pkl_dir + "pickle.pkl"
 
-    :param development:
-    :return df,encoder_date,encoder_label if dataframe_format is True else np.matrix,encoder_date,encoder_label:
-    """
+        with open(pkl_file, "rb") as f:
+            obj = pickle.load(f)
+        if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
+            print("Error, not correctly stored")
+            return False
 
-    # Check if loading is possible
+        return obj["df"], obj["encoder_date"], obj["encoder_label"], obj["decoder_date"], obj["decoder_label"]
 
-    pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
-    pkl_file = pkl_dir + "pickle_dev.pkl" if development else pkl_dir + "pickle.pkl"
+    def __init__(self):
 
-    # try:
-    #     with open(pkl_file, "rb") as f:
-    #         obj = pickle.load(f)
-    #     if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
-    #         print("Error, not correctly stored")
-    #         return False
-    #
-    #     return obj["df"], obj["encoder_date"], obj["encoder_label"],obj["decoder_date"], obj["decoder_label"]
-    # except Exception as e:
-    #     print(e)
-    #     print("No file found! Importaing data...")
+        # Load the dataframe
+        df = self.preprocess_individual_csvs_to_one_big_csv()
 
-    with open(pkl_file, "rb") as f:
-        obj = pickle.load(f)
-    if not ("encoder_label" in obj and "encoder_date" in obj and "df" in obj):
-        print("Error, not correctly stored")
-        return False
+    def preprocess(self, X):
+        """
+            Some obvious preprocessing (i.e. removing NAN items etc.)
+        :param X: df
+        :return: df without null rows
+        """
+        X_hat = X
 
-    return obj["df"], obj["encoder_date"], obj["encoder_label"], obj["decoder_date"], obj["decoder_label"]
+        X_hat = X_hat[X_hat.notnull()]
+        X_hat = X_hat[np.isfinite(X_hat)]
+        X_hat = X_hat.dropna()
+
+        X_hat = X_hat[~((X_hat.ReturnOpenPrevious5 > 5) | (X_hat.ReturnOpenPrevious5 < -0.75))]
+        X_hat = X_hat[~((X_hat.ReturnOpenNext1 > 5) | (X_hat.ReturnOpenNext1 < -0.75))]
+        X_hat = X_hat.sort_values(['Date', 'Label'])
+
+        response_col = X_hat.columns.get_loc("ReturnOpenNext1")
+        scaler = StandardScaler()
+        numerical_feature_cols = list(X_hat.columns[response_col + 1:])
+        X_hat[numerical_feature_cols] = scaler.fit_transform(X_hat[numerical_feature_cols])
+        print("Done scalar fitting!")
+
+        X_hat.reset_index(inplace=True, drop=True)
+
+        return X_hat
 
 
-def preprocess(X):
-    """
-        Some obvious preprocessing (i.e. removing NAN items etc.)
-    :param X: df
-    :return: df without null rows
-    """
-    X_hat = X
-
-    X_hat = X_hat[X_hat.notnull()]
-    X_hat = X_hat[np.isfinite(X_hat)]
-    X_hat = X_hat.dropna()
-
-    X_hat = X_hat[~((X_hat.ReturnOpenPrevious5 > 5) | (X_hat.ReturnOpenPrevious5 < -0.75))]
-    X_hat = X_hat[~((X_hat.ReturnOpenNext1 > 5) | (X_hat.ReturnOpenNext1 < -0.75))]
-    X_hat = X_hat.sort_values(['Date', 'Label'])
-
-    response_col = X_hat.columns.get_loc("ReturnOpenNext1")
-    scaler = StandardScaler()
-    numerical_feature_cols = list(X_hat.columns[response_col + 1:])
-    X_hat[numerical_feature_cols] = scaler.fit_transform(X_hat[numerical_feature_cols])
-    print("Done scalar fitting!")
-
-    X_hat.reset_index(inplace=True, drop=True)
-
-    return X_hat
-
-
-def create_train_val_test_split(data):
-    """
-    :param data: A numpy array of size (stocks, dates, features).
-    :return:
-
-        X_train, Y_train, X_val, Y_val, X_test, Y_test,
-        each item being a numpy array, again of size (stocks, dates, features)
-        (with according subsets of stocks / dates)
-
-    """
-    raise NotImplementedError
-
+dataloader = DataLoader()
 
 if __name__ == "__main__":
-    df = preprocess_individual_csvs_to_one_big_csv(development=False)
+    df = dataloader.preprocess_individual_csvs_to_one_big_csv(development=False)
     print(df.shape)
 
-    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=False)
+    df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data(development=False)
     print(df.shape)
 
     # create_train_val_test_split(full_dataset)

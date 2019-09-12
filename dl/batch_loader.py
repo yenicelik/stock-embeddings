@@ -40,14 +40,14 @@ if __name__ == "__main__":
     print("on random datasets which conform with the input type")
 
     n_stocks = 1000
-    n_dates = 10000
+    n_dates = 100 # 10000
     n_features = 200
 
     X_train = np.random.random((n_stocks, n_dates, n_features))
     Y_train = np.random.random((n_stocks, n_dates, n_features))
 
-    batch_loader = BatchLoader()
+    batch_loader = BatchLoader(X_train, Y_train, 32)
 
-
-    for X_batch, Y_bach in batch_loader.next():
-        sess.run(X_batch, Y_bach)
+    for tmp in batch_loader.next():
+        X_batch, Y_bach = tmp[0], tmp[1]
+        print(X_batch.shape, Y_bach.shape)

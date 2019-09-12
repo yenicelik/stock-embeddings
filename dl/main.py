@@ -6,14 +6,20 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from dl.data_loader import import_data, preprocess_individual_csvs_to_one_big_csv, preprocess
-from dl.model.baseline import BaselineModel
-from dl.model.baseline_noembedding import BaselineModelNoEmbedding
-from dl.model.decision_tree import DecisionTree
-from dl.model.random import RandomClassifier
-from dl.model.xgboost_classifier import XGBoostClassifier
+from dl.model.nn.baseline import BaselineModel
+from dl.model.nn.baseline_noembedding import BaselineModelNoEmbedding
+from dl.model.baselines.decision_tree import DecisionTree
+from dl.model.baselines.random import RandomClassifier
+from dl.model.baselines.xgboost_classifier import XGBoostClassifier
 
 def train_kaggle_baseline_model(market_df, development):
+    """
+        The baseline model is the model which consists of
+        -
+    :param market_df:
+    :param development:
+    :return:
+    """
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     numerical_feature_cols = list(market_df.columns[response_col + 1:])
     model = BaselineModel(

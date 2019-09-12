@@ -1,6 +1,5 @@
 from sklearn.tree import DecisionTreeClassifier
 
-
 class DecisionTree:
 
     def __init__(self):

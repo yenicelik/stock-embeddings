@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from dl.data_loader import import_data, preprocess
-from dl.model.baseline import BaselineModel
+from dl.model.nn.baseline import BaselineModel
 
 if __name__ == "__main__":
 
