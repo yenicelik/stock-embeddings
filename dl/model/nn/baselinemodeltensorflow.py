@@ -4,10 +4,7 @@
 """
 import os
 
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 import tensorflow as tf
-
 
 class BaselineModelTensorflow:
     embedding_dimension = 50
@@ -108,55 +105,3 @@ class BaselineModelTensorflow:
             self.fitted = True
             return True
         return False
-
-
-if __name__ == "__main__":
-    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True)
-    market_df = preprocess(df)
-
-    # response_col = market_df.columns.get_loc("ReturnOpenNext1")
-    # numerical_feature_cols = list(market_df.columns[response_col + 1:])
-
-    # def get_input(market_df, indices):
-    #     X_numerical = market_df.loc[indices, numerical_feature_cols].values
-    #     X_label = market_df.loc[indices, 'Label'].values
-    #     y = (market_df.loc[indices,'ReturnOpenNext1']>= 0).values
-    #     return X_label, X_numerical,y,
-
-    market_indices, market_test_indices = train_test_split(market_df.index, test_size=0.1, random_state=23)
-    market_train_indices, market_val_indices = train_test_split(market_indices, test_size=0.1, random_state=23)
-
-    from dl.model.nn.baseline import get_input
-
-    X_train, y_train = get_input(market_df, market_train_indices)
-    X_valid, y_valid = get_input(market_df, market_val_indices)
-    X_test, y_test = get_input(market_df, market_test_indices)
-
-    number_of_numerical_inputs = X_train['num_input'].shape[1]
-    model = BaselineModelTensorflow(encoder_label, number_of_numerical_inputs, development=True)
-    session_conf = tf.ConfigProto(allow_soft_placement=False, log_device_placement=False)
-    with tf.Session(config=session_conf) as sess:
-        sess.run(tf.global_variables_initializer())
-        model.fit(sess, X_train, y_train, X_val=X_valid, y_val=y_valid, num_epochs=3)
-        model.save_weights(sess)
-        predict_train = model.predict(sess, X_train) * 2 - 1
-        predict_valid = model.predict(sess, X_valid, ) * 2 - 1
-        predict_test = model.predict(sess, X_test) * 2 - 1
-
-    print("Train: ", accuracy_score(predict_train > 0, y_train > 0))
-    print("Validation: ", accuracy_score(predict_valid > 0, y_valid > 0))
-    print("Test: ", accuracy_score(predict_test > 0, y_test > 0))
-
-# #Provides the exact same results.
-#     tf.reset_default_graph()
-#     model=BaselineModelTensorflow(encoder_label,numerical_feature_cols,development=True)
-#     with tf.Session(config=session_conf) as sess:
-#         model.load_weights(sess)
-#         global_step=sess.run(model.global_step)
-#         predict_train = model.predict(sess, X_train_label, X_train_numerical) * 2 - 1
-#         predict_valid = model.predict(sess, X_valid_label, X_valid_numerical) * 2 - 1
-#         predict_test = model.predict(sess, X_test_label, X_test_numerical, ) * 2 - 1
-#
-#     print("Train: ", accuracy_score(predict_train > 0, y_train > 0))
-#     print("Validation: ", accuracy_score(predict_valid > 0, y_valid > 0))
-#     print("Test: ", accuracy_score(predict_test > 0, y_test > 0))

@@ -160,9 +160,7 @@ class DataLoader:
         return obj["df"], obj["encoder_date"], obj["encoder_label"], obj["decoder_date"], obj["decoder_label"]
 
     def __init__(self):
-
-        # Load the dataframe
-        df = self.preprocess_individual_csvs_to_one_big_csv()
+        pass
 
     def preprocess(self, X):
         """
