@@ -4,15 +4,15 @@
 import numpy as np
 import pandas as pd
 
-from dl.data_loader import import_data, preprocess
+from dl.data_loader import dataloader
 from dl.model.nn.baseline import BaselineModel
 
 if __name__ == "__main__":
 
     is_dev = True
 
-    df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=is_dev)
-    market_df = preprocess(df)
+    df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data(development=is_dev)
+    market_df = dataloader.preprocess(df)
 
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
     numerical_feature_cols = list(market_df.columns[response_col + 1:])
