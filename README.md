@@ -113,3 +113,7 @@ Backlog (ignore for now)
 #### 
 
 # TODO: Also include the loss (graphs for each one possibly)
+
+Future work:
+
+- [] embedding can be extended to non-linear, deep latent space (by using a sub-network)

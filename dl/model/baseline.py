@@ -5,13 +5,11 @@
 import os
 import pickle
 
-from keras.regularizers import l1
-
 from dl.data_loader import import_data
 from dl.data_loader import preprocess
 from keras.models import Model
 from keras.layers import Input, Dense, Embedding, Concatenate, Flatten, BatchNormalization
-from keras.losses import binary_crossentropy, mse
+from keras.losses import binary_crossentropy
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
