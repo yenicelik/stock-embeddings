@@ -97,11 +97,9 @@ class Trainer:
             extended=True
         )
 
-        input("Press a button to continue..")
         print("Fitting model!")
         self.current_model.fit(X_train, y_train.astype(int), X_val=X_valid, y_val=y_valid)
 
-        input("Press a button to continue.. (2)")
         predict_train = self.current_model.predict(X_train) * 2 - 1
         predict_valid = self.current_model.predict(X_valid) * 2 - 1
         predict_test = self.current_model.predict(X_test) * 2 - 1
@@ -115,17 +113,16 @@ class Trainer:
             predict_test=predict_test,
             y_test=y_test
         )
-        input("Done!")
 
         self.current_model.save_model()
-        # if self.embedding:
-        #     # Test Items
-        #     np.save("/cluster/home/yedavid/embedding_test_predicted.npy", predict_test)
-        #     np.save("/cluster/home/yedavid/embedding_test_real.npy", y_test)
-        # else:
-        #     # Test Items
-        #     np.save("/cluster/home/yedavid/no_embedding_test_predicted.npy", predict_test)
-        #     np.save("/cluster/home/yedavid/no_embedding_test_real.npy", y_test)
+        if self.embedding:
+            # Test Items
+            np.save("/cluster/home/yedavid/embedding_test_predicted.npy", predict_test)
+            np.save("/cluster/home/yedavid/embedding_test_real.npy", y_test)
+        else:
+            # Test Items
+            np.save("/cluster/home/yedavid/no_embedding_test_predicted.npy", predict_test)
+            np.save("/cluster/home/yedavid/no_embedding_test_real.npy", y_test)
 
 
 if __name__ == "__main__":

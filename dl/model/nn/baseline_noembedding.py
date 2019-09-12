@@ -93,7 +93,8 @@ class BaselineModelNoEmbedding:
         print(X['num_input'].shape)
         print(X['label_input'].shape)
 
-        self.keras_model.fit(X=X, Y=y,
+        # TODO: Explicitly defining the variables breaks it! Investigate this!!!
+        self.keras_model.fit(X, y,
                              # validation_data=(X_val, y_val),
                              epochs=20,
                              verbose=1,
