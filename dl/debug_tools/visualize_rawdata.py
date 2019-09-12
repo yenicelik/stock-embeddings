@@ -4,8 +4,6 @@
 
 from dl.data_loader import import_data
 from dl.data_loader import preprocess
-import numpy as np
-import pandas as pd
 
 import matplotlib.pyplot as plt
 plt.style.use('classic')
