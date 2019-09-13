@@ -9,6 +9,8 @@ from keras.models import Model
 from keras.layers import Input, Dense, Embedding, Concatenate, Flatten, BatchNormalization
 from keras.losses import binary_crossentropy
 
+from dl.training.params import params
+
 
 def get_input(market_df, indices):
     response_col = market_df.columns.get_loc("ReturnOpenNext1")
@@ -21,7 +23,6 @@ def get_input(market_df, indices):
 
 
 class BaselineModel:
-    embedding_dimension = 50
 
     @property
     def name(self):
@@ -36,7 +37,7 @@ class BaselineModel:
         self.fitted = False
 
         label_input = Input(shape=[1], name="label_input")
-        label_embedding = Embedding(len(encoder_label), self.embedding_dimension)(label_input)
+        label_embedding = Embedding(len(encoder_label), params.embedding_dimension)(label_input)
         label_logits = Flatten()(label_embedding)
         label_logits = Dense(32, activation='relu')(label_logits)
 

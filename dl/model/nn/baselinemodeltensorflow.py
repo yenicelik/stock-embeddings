@@ -6,8 +6,10 @@ import os
 
 import tensorflow as tf
 
+from dl.training.params import params
+
+
 class BaselineModelTensorflow:
-    embedding_dimension = 50
 
     @property
     def name(self):
@@ -21,7 +23,7 @@ class BaselineModelTensorflow:
         self.y = tf.placeholder(tf.float32, shape=[None], name="input_y")
 
         self.input_label = tf.placeholder(tf.int32, shape=[None], name="input_label")  # Shape batch_size
-        self.embedding_matrix = tf.Variable(tf.random_uniform((len(encoder_label), self.embedding_dimension), -1, 1),
+        self.embedding_matrix = tf.Variable(tf.random_uniform((len(encoder_label), params.embedding_dimension), -1, 1),
                                             name="Embedding")  # Shape (len(encoder_label),embedding_size)
         label_layer_1 = tf.nn.embedding_lookup(self.embedding_matrix,
                                                self.input_label)  # shape (batch_size,embedding_dimension)
