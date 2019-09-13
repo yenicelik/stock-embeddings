@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 
 from dl.data_loader import dataloader
+from dl.training.params import params
 
 
 def _print_accuracy_scores(
@@ -22,13 +23,14 @@ def _print_accuracy_scores(
     print("Test: ", accuracy_score(predict_test > 0, y_test > 0))
 
 
-def _provide_data(development, is_leonhard):
-    if is_leonhard:
+def _provide_data():
+    if params.is_leonhard:
         df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.preprocess_individual_csvs_to_one_big_csv(
-            development=development, direct_return=True)
+            direct_return=True
+        )
     else:
         # df = preprocess_individual_csvs_to_one_big_csv(development=development, direct_return=False)
-        df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data(development=development)
+        df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data()
 
     market_df = dataloader.preprocess(df)
 

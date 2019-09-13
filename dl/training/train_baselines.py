@@ -9,18 +9,17 @@ from sklearn.model_selection import train_test_split
 from dl.model.baselines.decision_tree import DecisionTree
 from dl.model.baselines.random import RandomClassifier
 from dl.model.baselines.xgboost_classifier import XGBoostClassifier
-from dl.model.nn.baseline import get_input
-from dl.training.utils import _print_accuracy_scores, _provide_data
+from dl.training.utils import _print_accuracy_scores, _provide_data, get_input
 
 
-def train_traditional_models(development, is_leonhard):
+def train_traditional_models():
     models = [
         ("RandomClassifier", RandomClassifier),
         ("XGBoostClassifier", XGBoostClassifier),
         ("DecisionTreeClassifier", DecisionTree)
     ]
 
-    market_df, num_feature_cols = _provide_data(development=development, is_leonhard=is_leonhard)
+    market_df, num_feature_cols = _provide_data()
 
     for name, model in models:
         model = model()

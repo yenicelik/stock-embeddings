@@ -11,29 +11,18 @@ from keras.losses import binary_crossentropy
 
 from dl.training.params import params
 
-
-def get_input(market_df, indices):
-    response_col = market_df.columns.get_loc("ReturnOpenNext1")
-    numerical_feature_cols = list(market_df.columns[response_col + 1:])
-    X_num = market_df.loc[indices, numerical_feature_cols].values
-    X = {'num_input': X_num}
-    X['label_input'] = market_df.loc[indices, 'Label'].values
-    y = (market_df.loc[indices, 'ReturnOpenNext1'] >= 0).values
-    return X, y,
-
-
 class BaselineModel:
 
     @property
     def name(self):
         return "BaselineModel"
 
-    def __init__(self, encoder_label, number_of_numerical_inputs, development=True, regression=False):
+    def __init__(self, encoder_label, number_of_numerical_inputs, regression=False):
         self.regression = regression
         self.savepath = os.getenv("MODELPATH_DIR") + self.name
-        self.savepath = self.savepath + "_dev.pkl" if development else self.savepath + ".pkl"
+        self.savepath = self.savepath + "_dev.pkl" if params.development else self.savepath + ".pkl"
         self.keras_modelcheckpoint_path = os.getenv("MODELPATH_DIR") + self.name
-        self.keras_modelcheckpoint_path = self.keras_modelcheckpoint_path + "_keras_dev.hdf5" if development else self.keras_modelcheckpoint_path + "_keras.hdf5"
+        self.keras_modelcheckpoint_path = self.keras_modelcheckpoint_path + "_keras_dev.hdf5" if params.development else self.keras_modelcheckpoint_path + "_keras.hdf5"
         self.fitted = False
 
         label_input = Input(shape=[1], name="label_input")
@@ -111,6 +100,6 @@ class BaselineModel:
                              verbose=1,
                              callbacks=[early_stop, check_point])
 
-        print("Embedding dimensions are: ", self.embedding_dimension)
+        print("Embedding dimensions are: ", params.embedding_dimension)
 
         # self.save_model()

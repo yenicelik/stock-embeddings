@@ -11,7 +11,6 @@ from keras.losses import binary_crossentropy
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 class BaselineModelNoEmbedding:
-    embedding_dimension = 10
 
     @property
     def name(self):

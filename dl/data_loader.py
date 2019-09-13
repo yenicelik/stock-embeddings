@@ -8,6 +8,8 @@ import multiprocessing
 
 from dotenv import load_dotenv
 
+from dl.training.params import params
+
 pd.set_option('display.max_columns', 500)
 np.set_printoptions(threshold=np.nan)
 load_dotenv()
@@ -51,7 +53,7 @@ class DataLoader:
         Defines all the information to
     """
 
-    def preprocess_individual_csvs_to_one_big_csv(self, development=False, direct_return=False):
+    def preprocess_individual_csvs_to_one_big_csv(self, direct_return=False):
         """
 
         Create a .env file, and input the path to your source data.
@@ -76,7 +78,7 @@ class DataLoader:
         filenames = list(set(filenames))  # remove any duplicates
         filenames = sorted(filenames)  # sort so we can resume reading in individual files
 
-        if development:
+        if params.development:
             filenames = filenames[:20]
 
         print("Total number of file: ", len(filenames))
@@ -106,7 +108,7 @@ class DataLoader:
         if direct_return:
             return df, encoder_date, encoder_label, decoder_date, decoder_label
 
-        if development:
+        if params.development:
             with open(os.getenv("DATA_PICKLE_DEV"), "wb") as f:
                 pickle.dump({
                     "encoder_label": encoder_label,
@@ -128,7 +130,7 @@ class DataLoader:
         if direct_return:
             return df, encoder_date, encoder_label, decoder_date, decoder_label
         pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
-        pkl_file = pkl_dir + "all_dev.pkl" if development else pkl_dir + "all.pkl"
+        pkl_file = pkl_dir + "all_dev.pkl" if params.development else pkl_dir + "all.pkl"
 
         with open(pkl_file, "wb") as f:
             pickle.dump({
@@ -139,7 +141,7 @@ class DataLoader:
                 "df": df}, f, protocol=4)
         return df
 
-    def import_data(self, development=False):
+    def import_data(self):
         """
 
         :param development:
@@ -149,7 +151,7 @@ class DataLoader:
         # Check if loading is possible
 
         pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
-        pkl_file = pkl_dir + "pickle_dev.pkl" if development else pkl_dir + "pickle.pkl"
+        pkl_file = pkl_dir + "pickle_dev.pkl" if params.development else pkl_dir + "pickle.pkl"
 
         with open(pkl_file, "rb") as f:
             obj = pickle.load(f)
@@ -192,10 +194,10 @@ class DataLoader:
 dataloader = DataLoader()
 
 if __name__ == "__main__":
-    df = dataloader.preprocess_individual_csvs_to_one_big_csv(development=False)
+    df = dataloader.preprocess_individual_csvs_to_one_big_csv()
     print(df.shape)
 
-    df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data(development=False)
+    df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data()
     print(df.shape)
 
     # create_train_val_test_split(full_dataset)

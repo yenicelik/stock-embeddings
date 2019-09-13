@@ -1,11 +1,19 @@
 """
     Parameter definitions
 """
+from sys import platform
 
 class Parameters:
 
     def __init__(self):
-        pass
+        self.embedding = True
+        self.development = True
+        self.is_leonhard = (platform == "linux" or platform == "linux2") and False
+
+        if not self.development:
+            print("Full mode!")
+        else:
+            print("DEV ON!!!")
 
     @property
     def embedding_dimension(self):

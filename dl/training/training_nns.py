@@ -2,7 +2,6 @@
     Includes a class which trains the model
 """
 import argparse
-from sys import platform
 import numpy as np
 
 from sklearn.model_selection import train_test_split
@@ -10,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from dl.data_loader import dataloader
 from dl.model.nn.baseline import BaselineModel
 from dl.model.nn.baseline_noembedding import BaselineModelNoEmbedding
+from dl.training.params import params
 from dl.training.utils import _provide_data, get_input, _print_accuracy_scores
 
 
@@ -20,7 +20,6 @@ class Trainer:
 
     def __init__(self):
         # Choose one of:
-        self.embedding = False
         print("Starting script!")
         parser = argparse.ArgumentParser(description='Process some integers.')
         parser.add_argument('--production', action='store_true', default=False, help='production')
@@ -30,37 +29,25 @@ class Trainer:
         print("Arguments: create_big_csv:{}".format(args.create_big_csv))
 
         # Make dev true if on linux machine!
-        is_linux = (platform == "linux" or platform == "linux2")
+        df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data()
 
-        self.development = True
-        is_leonhard = False
+        self.market_df, self.num_feature_cols = _provide_data()
 
-        df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data(
-            development=self.development
-        )
-
-        self.market_df, self.num_feature_cols = _provide_data(
-            development=self.development,
-            is_leonhard=is_leonhard
-        )
-
-        if self.embedding:
+        if params.embedding:
             self.current_model = BaselineModel(
                 encoder_label,
-                number_of_numerical_inputs=len(self.num_feature_cols),
-                development=self.development
+                number_of_numerical_inputs=len(self.num_feature_cols)
             )
         else:
             self.current_model = BaselineModelNoEmbedding(
                 encoder_label,
-                num_feature_cols=self.num_feature_cols,
-                dev=self.development
+                num_feature_cols=self.num_feature_cols
             )
         self.current_model.keras_model.summary()
 
     def train_nn_models(self):
 
-        if not self.embedding:
+        if not params.embedding:
             self.current_model.optimizer_definition()
 
         self.current_model.keras_model.summary()
@@ -105,7 +92,7 @@ class Trainer:
         predict_test = self.current_model.predict(X_test) * 2 - 1
 
         _print_accuracy_scores(
-            name="embedding" if self.embedding else "no_embedding",
+            name="embedding" if params.embedding else "no_embedding",
             predict_train=predict_train,
             y_train=y_train,
             predict_valid=predict_valid,
@@ -115,7 +102,7 @@ class Trainer:
         )
 
         self.current_model.save_model()
-        if self.embedding:
+        if params.embedding:
             # Test Items
             np.save("/cluster/home/yedavid/embedding_test_predicted.npy", predict_test)
             np.save("/cluster/home/yedavid/embedding_test_real.npy", y_test)
