@@ -50,7 +50,12 @@ def _provide_data():
     return market_df, num_feature_cols
 
 
-def get_input(market_df, indices, num_feature_cols, extended=False):
+def get_input(
+        market_df,
+        indices,
+        num_feature_cols,
+        extended=False,
+        train_out=False):
     if extended:
         X_num = market_df.loc[indices, num_feature_cols].values
         X = {'num_input': X_num}
@@ -58,4 +63,13 @@ def get_input(market_df, indices, num_feature_cols, extended=False):
     else:
         X = market_df.loc[indices, num_feature_cols].values
     y = (market_df.loc[indices, 'ReturnOpenNext1'] >= 0).values
+
+    # Hacky solution to save this data
+    _y = (market_df.loc[indices, 'ReturnOpenNext1']).values
+
+    if train_out:
+        import numpy as np
+        np.save("/home/david/embedding_test_real_regression.npy", _y)
+        np.save("/home/david/embedding_test_real.npy", y)
+
     return X, y

@@ -81,7 +81,8 @@ class Trainer:
             self.market_df,
             market_test_indices,
             self.num_feature_cols,
-            extended=True
+            extended=True,
+            train_out=True
         )
 
         print("Fitting model!")

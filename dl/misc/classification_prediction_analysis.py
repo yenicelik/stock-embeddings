@@ -22,6 +22,10 @@ def _load_predictions():
 
     y_hat = y_hat > 0.0
 
+    buy_only = False
+    if buy_only:
+        y_hat = len(y) * [True]
+
     print(y_hat[:3])
     print(y[:3])
 
@@ -56,13 +60,14 @@ def auc_plot(real, predicted):
     # calculate roc curve
     fpr, tpr, thresholds = roc_curve(real, predicted)
     # plot no skill
-    plt.plot([0, 1], [0, 1], linestyle='--')
+    plt.plot([0, 1], [0, 1], linestyle='--', label="buy-only")
     # plot the roc curve for the model
-    plt.plot(fpr, tpr, marker='.')
+    plt.plot(fpr, tpr, marker='.', label='our model')
     # show the plot
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("ROC Curve")
+    plt.legend()
     plt.xlim(0, 1)
     plt.ylim(0, 1)
     plt.show()
