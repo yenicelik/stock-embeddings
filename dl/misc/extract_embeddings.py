@@ -18,8 +18,7 @@ if __name__ == "__main__":
     numerical_feature_cols = list(market_df.columns[response_col + 1:])
     model = BaselineModel(
         encoder_label,
-        number_of_numerical_inputs=len(numerical_feature_cols),
-        development=is_dev
+        number_of_numerical_inputs=len(numerical_feature_cols)
     )
 
     if is_dev:

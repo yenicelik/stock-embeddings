@@ -102,14 +102,23 @@ class Trainer:
         )
 
         self.current_model.save_model()
+        # if params.embedding:
+        #     # Test Items
+        #     np.save("/cluster/home/yedavid/embedding_test_predicted.npy", predict_test)
+        #     np.save("/cluster/home/yedavid/embedding_test_real.npy", y_test)
+        # else:
+        #     # Test Items
+        #     np.save("/cluster/home/yedavid/no_embedding_test_predicted.npy", predict_test)
+        #     np.save("/cluster/home/yedavid/no_embedding_test_real.npy", y_test)
+
         if params.embedding:
             # Test Items
-            np.save("/cluster/home/yedavid/embedding_test_predicted.npy", predict_test)
-            np.save("/cluster/home/yedavid/embedding_test_real.npy", y_test)
+            np.save("/home/david/embedding_test_predicted.npy", predict_test)
+            np.save("/home/david/embedding_test_real.npy", y_test)
         else:
             # Test Items
-            np.save("/cluster/home/yedavid/no_embedding_test_predicted.npy", predict_test)
-            np.save("/cluster/home/yedavid/no_embedding_test_real.npy", y_test)
+            np.save("/home/david/no_embedding_test_predicted.npy", predict_test)
+            np.save("/home/david/no_embedding_test_real.npy", y_test)
 
 
 if __name__ == "__main__":

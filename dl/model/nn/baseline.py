@@ -19,7 +19,7 @@ class BaselineModel:
 
     def __init__(self, encoder_label, number_of_numerical_inputs, regression=False):
         self.regression = regression
-        self.savepath = os.getenv("MODELPATH_DIR") + self.name
+        self.savepath = os.getenv("MODELPATH_DIR") + self.name + "_emb{}".format(params.embedding_dimension)
         self.savepath = self.savepath + "_dev.pkl" if params.development else self.savepath + ".pkl"
         self.keras_modelcheckpoint_path = os.getenv("MODELPATH_DIR") + self.name
         self.keras_modelcheckpoint_path = self.keras_modelcheckpoint_path + "_keras_dev.hdf5" if params.development else self.keras_modelcheckpoint_path + "_keras.hdf5"
@@ -102,4 +102,4 @@ class BaselineModel:
 
         print("Embedding dimensions are: ", params.embedding_dimension)
 
-        # self.save_model()
+        self.save_model()

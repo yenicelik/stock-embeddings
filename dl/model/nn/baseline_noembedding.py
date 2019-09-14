@@ -86,7 +86,7 @@ class BaselineModelNoEmbedding:
         #     print("Loaded model instead of fitting!")
         #     return True
 
-        check_point = ModelCheckpoint('model.hdf5', verbose=True, save_best_only=True)
+        check_point = ModelCheckpoint('model_noembedding.hdf5', verbose=True, save_best_only=True)
         early_stop = EarlyStopping(patience=5, verbose=True)
         print(y.shape)
         print(X['num_input'].shape)
@@ -100,4 +100,4 @@ class BaselineModelNoEmbedding:
                              # callbacks=[early_stop, check_point]
         )
 
-        # self.save_model()
+        self.save_model()

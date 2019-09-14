@@ -149,7 +149,6 @@ class DataLoader:
         """
 
         # Check if loading is possible
-
         pkl_dir = os.getenv("DATAPATH_PROCESSED_DIR")
         pkl_file = pkl_dir + "pickle_dev.pkl" if params.development else pkl_dir + "pickle.pkl"
 

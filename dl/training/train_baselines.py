@@ -52,7 +52,4 @@ def train_traditional_models():
 
 if __name__ == "__main__":
     print("Starting to train all the traditional baselines")
-    train_traditional_models(
-        development=True,
-        is_leonhard=False
-    )
+    train_traditional_models()
