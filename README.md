@@ -123,10 +123,11 @@ Future work:
 
 - [] Der Teil zu Feature Engineering ist jetzt fehl am Platz und muss weg, dafuer sollten wir den Teil zu Embeddings ausbauen
 
-- [] Und bei dem Stock Experiment nur eine Accuracy zahl zu zeigen, idk -> Do more analysis with prediction ROC or so, or predicision/recall matrix
 
 - [] Der Punkt ist, dass Leute kommen koennen und sagen: Wie viele Returns in eurem Sample waren positiv (in der Periode sind es grob geschaetzt signifikant mehr als 50%), was macht ein Indikator mit 54% Accuracy dann fuer einen Unterschied vs salopp gesagt einfach drauf los zu kaufen
 
 - [] Entweder mehr Sachen isV MAE fuer jeweils positive/negative forecasts jeweils zeigen, oder direkt ein Investmentexperiment machen
+
+- [x] Und bei dem Stock Experiment nur eine Accuracy zahl zu zeigen, idk -> Do more analysis with prediction ROC or so, or predicision/recall matrix
 
 - [x] Die ganzen Grafiken und das Format muss nochmal sauber ueberarbeitet werden
