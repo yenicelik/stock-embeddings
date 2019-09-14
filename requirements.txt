@@ -10,3 +10,4 @@ xgboost
 seaborn==0.9.0
 pandas
 scikit-learn
+lxml

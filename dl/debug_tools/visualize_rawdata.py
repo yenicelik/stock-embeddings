@@ -2,14 +2,14 @@
     Some debug tools, such as visualizations etc.
 """
 
-from dl.data_loader import import_data
-from dl.data_loader import preprocess
+from dl.data_loader import dataloader
 
 import matplotlib.pyplot as plt
-plt.style.use('classic')
+# plt.style.use('classic')
 
 import seaborn as sns
 sns.set()
+sns.set_style("whitegrid")
 
 
 def abb_plot():
@@ -21,8 +21,8 @@ def abb_plot():
     :return:
     """
     print("Starting plot")
-    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True)
-    market_df = preprocess(market_df)
+    market_df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data()
+    market_df = dataloader.preprocess(market_df)
     market_df.head(10)
 
     abb_label = encoder_label.get("abb")
@@ -37,8 +37,12 @@ def abb_plot():
     plt.plot(abb_df.Date, abb_df.Open)
 
     plt.xlabel('Timestep')
-    plt.ylabel('Stock value in $ (Open)')
-    plt.title('ABB Stock value in $ per timestep (Sample)')
+    plt.ylabel('Stock value in USD (Open)')
+    plt.title('ABB Stock value in USD per timestep (Sample)')
+
+    # Set y-limits and x-limits
+    plt.ylim(0, max(abb_df.Open)*1.1)
+    plt.xlim(min(abb_df.Date), max(abb_df.Date))
 
     plt.show()
     # plt.legend('ABCDEF', ncol=2, loc='upper left')
@@ -52,8 +56,8 @@ def abb_plot_response_variable():
     :return:
     """
     print("Starting plot")
-    market_df, encoder_date, encoder_label, decoder_date, decoder_label = import_data(development=True)
-    market_df = preprocess(market_df)
+    market_df, encoder_date, encoder_label, decoder_date, decoder_label = dataloader.import_data()
+    market_df = dataloader.preprocess(market_df)
     market_df.head(10)
 
     abb_label = encoder_label.get("abb")
@@ -68,8 +72,11 @@ def abb_plot_response_variable():
     plt.plot(abb_df.Date, abb_df.ReturnOpenPrevious5)
 
     plt.xlabel('Timestep')
-    plt.ylabel('5-Day-Change in $')
-    plt.title('5-Day-Change in ABB Stock value in $ per timestep (Sample)')
+    plt.ylabel('5-Day-Change in USD')
+    plt.title('5-Day-Change in ABB Stock value in USD per timestep (Sample)')
+
+    plt.ylim(min(abb_df.ReturnOpenPrevious5) * 1.1, max(abb_df.ReturnOpenPrevious5) * 1.1)
+    plt.xlim(min(abb_df.Date), max(abb_df.Date))
 
     plt.show()
     plt.clf()
@@ -77,8 +84,11 @@ def abb_plot_response_variable():
     plt.plot(abb_df.Date, abb_df.ReturnOpenPrevious1)
 
     plt.xlabel('Timestep')
-    plt.ylabel('1-Day-Change in $')
-    plt.title('1-Day-Change in ABB Stock value in $ per timestep (Sample)')
+    plt.ylabel('1-Day-Change in USD')
+    plt.title('1-Day-Change in ABB Stock value in USD per timestep (Sample)')
+
+    plt.ylim(min(abb_df.ReturnOpenPrevious1) * 1.1, max(abb_df.ReturnOpenPrevious1) * 1.1)
+    plt.xlim(min(abb_df.Date), max(abb_df.Date))
 
     plt.show()
     plt.clf()
@@ -86,13 +96,15 @@ def abb_plot_response_variable():
     plt.plot(abb_df.Date, abb_df.ReturnOpenNext1)
 
     plt.xlabel('Timestep')
-    plt.ylabel('Response Variable 1-Day-Change in $')
-    plt.title('Response Variable 1-Day-Change in ABB Stock value in $ per timestep (Sample)')
+    plt.ylabel('1-Day-Change in USD')
+    plt.title('Response Variable \n 1-Day-Change in ABB Stock value in USD per timestep (Sample)')
+
+    plt.ylim(min(abb_df.ReturnOpenNext1) * 1.1, max(abb_df.ReturnOpenNext1) * 1.1)
+    plt.xlim(min(abb_df.Date), max(abb_df.Date))
 
     plt.show()
     plt.clf()
     # plt.legend('ABCDEF', ncol=2, loc='upper left')
-
 
 
 if __name__ == "__main__":
